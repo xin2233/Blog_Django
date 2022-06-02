@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--取消了body的边距-->
+    <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.css" rel="stylesheet">
+    <style>
+        /*最后展示区域的大小取决于绑定元素的面积*/
+        #my-background {
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div id="my-background">123</div>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vanta/0.5.22/vanta.birds.min.js"></script> -->
+<script src="{% static 'users/three.min.js' %}"></script>
+<script src="{% static 'users/vanta.birds.min.js' %}"></script>
+<script>
+    // VANTA.BIRDS({
+    //     el: "#my-background",
+    //     mouseControls: true,
+    //     touchControls: true,
+    //     gyroControls: false,
+    //     minHeight: 200.00,
+    //     minWidth: 200.00,
+    //     scale: 1.00,
+    //     scaleMobile: 1.00,
+    //     backgroundColor: 0x191e20,
+    //     color1: 0x7914b1,
+    //     color2: 0xfc1eb,
+    //     birdSize: 2.40,
+    //     wingSpan: 25.00,
+    //     speedLimit: 6.00,
+    //     separation: 56.00,
+    //     alignment: 44.00,
+    //     cohesion: 39.00,
+    //     quantity: 2.00
+    // })
+    VANTA.BIRDS({
+      el: "#my-background",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      scale: 1.00,
+      scaleMobile: 1.00
+    })
+</script>
+</body>
+</html>

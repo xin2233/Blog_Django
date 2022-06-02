@@ -1,0 +1,56 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>登录页面</title>
+{% endblock head %}
+
+{% block extra_style %}
+<script src="{% static 'users/three.min.js' %}"></script>
+<script src="{% static 'users/vanta.birds.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="hero is-fullheight" id="my-background">
+    <div class="hero-body">
+        <div class="container hidden">
+            <div class="columns is-centered">
+                <div class="column is-5-desktop is-4-fullhd">
+                    <div class="box hidden">
+                        <h1 class="is-uppercase has-text-centered has-text-weight-bold">又是一天
+                            <br><span class="tag">登录</span>
+                        </h1>
+                        <hr class="dropdown-divider">
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            {{ form.errors }}
+                            <a class=" is-pulled-right is-size-7" href="{% url 'users:forget_pwd' %}">忘记密码?</a>
+                            <div class=" is-clearfix"></div>
+                            <input type="submit" style="margin-top: 1em;" class="button is-link is-fullwidth" value="登 录">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block foot %}
+<script>
+    VANTA.BIRDS({
+        el: "#my-background",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        backgroundColor: 0xdbeef2
+    })
+</script>
+{% endblock foot %}
+

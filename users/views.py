@@ -127,7 +127,6 @@ def logout_view(request):
     return redirect('users:login')
 
 
-
 @login_required(login_url='users:login')   # 登录之后允许访问
 def editor_users(request):
     """ 编辑用户信息 """

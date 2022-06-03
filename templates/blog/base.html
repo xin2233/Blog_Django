@@ -5,9 +5,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>{% block title %}我的博客，基于Django实现{% endblock %}</title>
+	<title>{% block title %}bbbblllloooogggg{% endblock %}</title>
 	<!-- <link rel="stylesheet" href="{% static 'users/bulma.css' %}"> -->
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+	<link rel="stylesheet" href="{% static 'bulma/css/bulma.min.css' %}">
 
 </head>
 
@@ -16,7 +16,7 @@
 	<nav class="navbar is-primary container" role="navigation" aria-label="main navigation">
 			<div class="navbar-brand">
 				<a class="navbar-item" href="https://bulma.io">
-					<img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
+					<img src="{% static 'bulma-logo.png' %}" width="112" height="28">
 				</a>
 
 				<a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"

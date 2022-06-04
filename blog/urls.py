@@ -9,4 +9,5 @@ urlpatterns = [
     path('post/<int:post_id>/', views.post_detail, name='post_detail'),
     path('search/', views.search, name='search'),
     path('archives/<int:year>/<int:month>/', views.archives, name='archives'),
+    path('edit/', views.article_edit, name='article_edit'), # 编辑文章url
 ]

@@ -37,10 +37,13 @@ def active_user(request, active_code):
 
 def login_view(request):
     """登录功能"""
+    if request.session.get('is_login', None):  # 如果已经登陆了就直接进入index
+        return redirect('')
     if request.method != 'POST':
         form = LoginForm()
     else:
         form = LoginForm(request.POST)
+        message = "请检查填写的内容！"
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
@@ -50,10 +53,10 @@ def login_view(request):
                 # 登录成功之后跳转到个人中心
                 return redirect('users:user_profile')
             else:
-                return HttpResponse('登陆失败')
-
+                message = "密码不正确！"
+        return render(request, 'users/login.html', locals())
     context = {'form': form}
-    return render(request, 'users/login.html', context)
+    return render(request, 'users/login.html', locals())
 
 
 def register(request):

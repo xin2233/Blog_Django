@@ -37,7 +37,7 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError('邮箱已经存在!')
         return email
 
-    def clean_password1(self):
+    def clean_password(self):
         """验证密码是否相等"""
         if self.cleaned_data['password'] != self.cleaned_data['password1']:
             raise forms.ValidationError('两次密码输入不一致！')

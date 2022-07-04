@@ -4,16 +4,17 @@ from django.contrib.auth.models import User
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label='用户名', max_length=15)
-    password = forms.CharField(
-        label='密码', min_length=6, widget=forms.PasswordInput())
+    uname = forms.CharField(label='用户名', max_length=24, error_messages={"min_length": "你太长了，最多24个字符", "required": "该字段不能为空!"})
+    pword = forms.CharField(label='密码', min_length=6, error_messages={"min_length": "你太短了，需要6个字符", "required": "该字段不能为空!"})
 
     def clean_password(self):
-        username = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
-        if username == password:
-            raise forms.ValidationError('密码不能与用户名一样！')
-        return password
+        username = self.cleaned_data.get('uname')
+        password = self.cleaned_data.get('pword')
+        # print("username:",username,"password:",password)s
+        print(self.cleaned_data)
+        # if username == password:
+        #     raise forms.ValidationError('密码不能与用户名一样！')
+        return username,password
 
 
 class RegisterForm(forms.ModelForm):
@@ -37,7 +38,7 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError('邮箱已经存在!')
         return email
 
-    def clean_password(self):
+    def clean_password1(self):
         """验证密码是否相等"""
         if self.cleaned_data['password'] != self.cleaned_data['password1']:
             raise forms.ValidationError('两次密码输入不一致！')

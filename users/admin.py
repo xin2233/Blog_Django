@@ -17,6 +17,7 @@ class UserProfileInline(admin.StackedInline):
 # 关联字段在User之内编辑，关联进来
 class UserProfileAdmin(UserAdmin):
     inlines = [UserProfileInline]
+    list_display = ('username', 'email', 'is_active', 'is_superuser', 'last_login')
 
 # 重新注册User
 admin.site.register(User, UserProfileAdmin)

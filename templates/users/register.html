@@ -5,44 +5,68 @@
 {% endblock head %}
 
 {% block extra_style %}
-<script src="{% static 'users/three.min.js' %}"></script>
-<script src="{% static 'users/vanta.birds.min.js' %}"></script>
+<script src="{% static 'users/js/three.min.js' %}"></script>
+<script src="{% static 'users/js/vanta.birds.min.js' %}"></script>
+
+<!-- Loading Bootstrap -->
+<link href="{% static 'flatui/dist/css/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+<!-- Loading Flat UI -->
+<link href="{% static 'flatui/dist/css/flat-ui.css' %}" rel="stylesheet">
+<link href="{% static 'flatui/docs/assets/css/demo.css' %}" rel="stylesheet">
+
+<link rel="shortcut icon" href="img/favicon.ico">
+<style>
+    .login-center {
+        height: 100vh;
+    }
+</style>
 {% endblock %}    
 
 {% block content %}
-
-<div class="hero is-fullheight" id="my-background">
-    <div class="hero-body">
-        <div class="container hidden">
-            <div class="columns is-centered">
-                <div class="column is-5-desktop is-4-fullhd">
-                    <div class="box">
-                        <h1 class="is-uppercase has-text-centered has-text-weight-bold">又是一天
-                            <br><span class="tag">注册</span>
-                        </h1>
-                        <hr class=" dropdown-divider">
-                        <form action="" method="post">
-                            {% csrf_token %}
-                            {{ form.as_p }}
-                            <input type="submit" style="margin-top: 1em;" class="button is-link is-fullwidth" value="注 册">
-                        </form>
-                    </div>
-                </div>
+<div class="vjs-fullscreen" id="my-background">
+    <div class="row align-items-centerjustify-content-center login-center">
+        <div class="col-md-4 col-md-offset-4">
+            <h1 class="is-uppercase has-text-centered has-text-weight-bold">下面开始：
+                <br><span class="tag">注册</span>
+            </h1>
+            <!-- <div class="login-screen"> -->
+            <div class="login-icon">
+                <h4>Welcome to <small>Mail App</small></h4>
             </div>
+            <!-- {% if message %}
+            <div class="alert alert-warning">{{ message }}</div>
+            {% endif %} -->
+            <div>
+                <form class="login-form" action="" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="email" class="form-control login-field" value=""
+                            placeholder="邮箱" id="login-name">
+                        <label class="login-field-icon fui-user" for="login-name"></label>
+                        {{ form.errors.email }}
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control login-field" value=""
+                            placeholder="密码" id="login-pass">
+                        <label class="login-field-icon fui-lock" for="login-pass"></label>
+                        {{ form.errors.password }}
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password1" class="form-control login-field" value=""
+                            placeholder="再次输入密码" id="login-pass">
+                        <label class="login-field-icon fui-lock" for="login-pass"></label>
+                        {{ form.errors.password1 }}
+                    </div>
+                    <input type="submit" class="btn btn-primary btn-lg btn-block" value="注册">
+                </form>
+
+            </div>
+            <!-- </div> -->
         </div>
     </div>
 </div>
-<!-- <div class="box">
-    <h1 class="is-uppercase has-text-centered has-text-weight-bold">又是一天
-        <br><span class="tag">注册</span>
-    </h1>
-    <hr class=" dropdown-divider">
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" style="margin-top: 1em;" class="button is-link is-fullwidth" value="注 册">
-    </form>
-</div> -->
 {% endblock content %}
 
 {% block foot %}

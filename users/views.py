@@ -15,10 +15,13 @@ class MyBackend(ModelBackend):
     """ 邮箱登录注册 """
     def authenticate(self, request, username=None, password=None, ):
         try:
-            user = User.objects.get(Q(username=username)|Q(email=username))
-            if user.check_password(password):   # 加密明文密码
+            user = User.objects.get(Q(username=username) | Q(email=username))
+            print("user:", user)
+            print('user check,', user.check_password)
+            if user.check_password(password):  # 加密明文密码
                 return user
         except Exception as e:
+            print(e)
             return None
 
 def active_user(request, active_code):
@@ -40,22 +43,25 @@ def login_view(request):
     if request.session.get('is_login', None):  # 如果已经登陆了就直接进入index
         return redirect('')
     if request.method != 'POST':
-        form = LoginForm()
+        login_form = LoginForm()
     else:
-        form = LoginForm(request.POST)
-        message = "请检查填写的内容！"
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            username = login_form.cleaned_data['uname']
+            password = login_form.cleaned_data['pword']
+            print('in login view,uname{},password{}'.format(username, password))
+            my = MyBackend()
+            user = my.authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
                 # 登录成功之后跳转到个人中心
-                return redirect('users:user_profile')
+                return redirect('/users/user_profile/')
             else:
                 message = "密码不正确！"
+        else:
+            message = "请检查填写的内容！"
         return render(request, 'users/login.html', locals())
-    context = {'form': form}
+    # context = {'form': form}
     return render(request, 'users/login.html', locals())
 
 
@@ -66,15 +72,17 @@ def register(request):
     else:
         form = RegisterForm(request.POST)
         if form.is_valid():
+            # commit = False,表示form这个实例是暂存的，可以自己在添加其他字段，
+            # 然后通过 xxx.save()保存到数据库中
             new_user = form.save(commit=False)
-            new_user.set_password(form.cleaned_data.get('password'))
+            new_user.set_password(form.cleaned_data.get('password1'))
             new_user.username = form.cleaned_data.get('email')
             new_user.save()
 
             # 发送邮件
             send_register_email(form.cleaned_data.get('email'), 'register')
             return HttpResponse('注册成功')
-            
+
     context = {'form': form}
     return render(request, 'users/register.html', context)
 
@@ -93,7 +101,7 @@ def forget_pwd(request):
                 return HttpResponse('邮件已经发送请查收！')
             else:
                 return HttpResponse('邮箱还未注册，请前往注册！')
-    
+
     return render(request, 'users/forget_pwd.html', {'form': form})
 
 
@@ -158,7 +166,7 @@ def editor_users(request):
         try:
             userprofile = user.userprofile
             form = UserForm(instance=user)
-            user_profile_form = UserProfileForm(instance=userprofile) 
+            user_profile_form = UserProfileForm(instance=userprofile)
         except UserProfile.DoesNotExist:
             form = UserForm(instance=user)
             user_profile_form = UserProfileForm()  # 显示空表单

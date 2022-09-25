@@ -1,0 +1,153 @@
+{% extends 'blog/backend/backend_base.html' %}
+
+{% block backendcontent %}
+    {% load static %}
+    <script src="{% static 'backend/jquery-3.4.1/jquery-3.4.1.min.js' %}"></script>
+    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+    <style>
+        #editor—wrapper {
+            border: 1px solid #ccc;
+            z-index: 100; /* 按需定义 */
+        }
+
+        #toolbar-container {
+            border-bottom: 1px solid #ccc;
+        }
+
+        #editor-container {
+            height: 500px;
+        }
+    </style>
+    <div>
+        <p>添加文章</p>
+        <div class="form-group">
+            <label for="id_name">
+                文章标题
+            </label>
+            <input type="text" name="name" id="id_name" class="form-control">
+            <p>内容（wangeditor编辑器，已支持上传图片）</p>
+            <div id="editor—wrapper">
+                <div id="toolbar-container"><!-- 工具栏 --></div>
+                <div id="editor-container"><!-- 编辑器 --></div>
+            </div>
+            <p>
+                <button class="btn btn-success">提交</button>
+            </p>
+        </div>
+
+        <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+        <script>
+            const {createEditor, createToolbar} = window.wangEditor
+
+            editorConfig = {
+                MENU_CONF : {
+                    server : '/sdfsf/',
+                },
+                placeholder: 'Type here...',
+                onChange(editor) {
+                    const html = editor.getHtml()
+                    console.log('editor content', html)
+                    // 也可以同步到 <textarea>
+                },
+            }
+            toolbarConfig ={}
+
+            // 修改 uploadImage 菜单配置
+            editorConfig.MENU_CONF['uploadImage'] = {
+                server: '/upload_img/',
+                fieldName: 'custom-field-name'
+                // 继续写其他配置...
+
+                //【注意】不需要修改的不用写，wangEditor 会去 merge 当前其他配置
+            }
+
+            // 修改 otherMenuKey 菜单配置
+            editorConfig.MENU_CONF['otherMenuKey'] = {
+                // 配置
+            }
+            // 文字颜色
+            editorConfig.MENU_CONF['color'] = {
+                colors: ['#000', '#333', '#666']
+            }
+
+            // 背景色
+            editorConfig.MENU_CONF['bgColor'] = {
+                colors: ['#000', '#333', '#666']
+            }
+            editorConfig.MENU_CONF['fontSize'] = {
+                fontSizeList: [
+                    // 元素支持两种形式
+                    //   1. 字符串；
+                    //   2. { name: 'xxx', value: 'xxx' }
+
+                    '12px',
+                    '16px',
+                    {name: '24px', value: '24px'},
+                    '40px',
+                ]
+            }
+            editorConfig.MENU_CONF['lineHeight'] = {
+                lineHeightList: ['1', '1.5', '2', '2.5']
+            }
+            editorConfig.MENU_CONF['emotion'] = {
+                emotions: '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉'.split(' ') // 数组
+            }
+
+            // 自定义校验链接
+            // function customCheckLinkFn(text: string, url: string): string | boolean | undefined {   // TS 语法
+            function customCheckLinkFn(text, url) {                                              // JS 语法
+
+                if (!url) {
+                    return
+                }
+                if (url.indexOf('http') !== 0) {
+                    return '链接必须以 http/https 开头'
+                }
+                return true
+
+                // 返回值有三种选择：
+                // 1. 返回 true ，说明检查通过，编辑器将正常插入链接
+                // 2. 返回一个字符串，说明检查未通过，编辑器会阻止插入。会 alert 出错误信息（即返回的字符串）
+                // 3. 返回 undefined（即没有任何返回），说明检查未通过，编辑器会阻止插入。但不会提示任何信息
+            }
+
+            // 自定义转换链接 url
+            // function customParseLinkUrl(url: string): string {   // TS 语法
+            function customParseLinkUrl(url) {                // JS 语法
+
+                if (url.indexOf('http') !== 0) {
+                    return `http://${url}`
+                }
+                return url
+            }
+
+            // 插入链接
+            editorConfig.MENU_CONF['insertLink'] = {
+                checkLink: customCheckLinkFn, // 也支持 async 函数
+                parseLinkUrl: customParseLinkUrl, // 也支持 async 函数
+            }
+            // 更新链接
+            editorConfig.MENU_CONF['editLink'] = {
+                checkLink: customCheckLinkFn, // 也支持 async 函数
+                parseLinkUrl: customParseLinkUrl, // 也支持 async 函数
+            }
+
+            {#这下面的两个是初始化，必须放在最下面，上面进行相关的配置#}
+            // 编辑栏
+            editor = createEditor({
+                selector: '#editor-container',
+                html: '<p><br></p>',
+                config: editorConfig,
+                mode: 'default', // or 'simple'
+            })
+            // 工具栏
+            toolbar = createToolbar({
+                editor,
+                selector: '#toolbar-container',
+                config: toolbarConfig,
+                mode: 'default', // or 'simple'
+            })
+        </script>
+
+    </div>
+{% endblock backendcontent %}

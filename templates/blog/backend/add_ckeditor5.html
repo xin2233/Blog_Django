@@ -1,0 +1,47 @@
+{% extends 'blog/backend/backend_base.html' %}
+
+{% block backendcontent %}
+{% load static %}
+<div>
+    <p>添加文章</p>
+    <div class="form-group">
+        <label for="id_name">
+            文章标题
+        </label>
+        <input type="text" name="name" id="id_name" class="form-control">
+        <p>内容（xxx编辑器，暂不支持上传图片）</p>
+        <textarea id="editor_id" name="content" style="width:700px;height:300px;">
+
+        </textarea>
+        <p>
+            <button class="btn btn-success" >提交</button>
+        </p>
+    </div>
+<!-- 
+JQuery 选择器
+基本选择器
+id 选择器：$("#id 名")
+元素选择器:$("元素名")
+类选择器:$(". 类名")
+群组选择器:$("选择器 1, 选择器 2,......., 选择器 n")
+* 选择器:$("*") 选择所有元素 
+-->
+    <script src="{% static '/backend/ckeditor5.23/ckeditor.js' %}"></script>
+    <script>ClassicEditor
+        .create(document.querySelector('#editor_id'), {
+            licenseKey: '',
+        })
+        .then(editor => {
+            window.editor = editor;
+        })
+        .catch(error => {
+            console.error('Oops, something went wrong!');
+            console.error('Please, report the following error on https://github.com/ckeditor/ckeditor5/issues with the build id and the error stack trace:');
+            console.warn('Build id: e7ch49uf7dmi-nohdljl880ze');
+            console.error(error);
+        });
+    </script>
+
+</div>
+{% endblock backendcontent %}
+

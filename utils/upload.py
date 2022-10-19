@@ -27,7 +27,7 @@ def upload_file(request):
     # 构造要求的数据格式并返回
     filename = upload.name
     url = '/media/upload/' + filename
-    retdata = {'url': url,
+    ret_data = {'url': url,
                'uploaded': '1',
                'fileName': filename}
-    return JsonResponse(retdata)
+    return JsonResponse(ret_data)

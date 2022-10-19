@@ -2,14 +2,16 @@
 # https://docs.djangoproject.com/zh-hans/3.2/howto/custom-template-tags/  官方文档
 
 from django import template
-from blog.models import Category, Sidebar, Post
+from blog.models import Category, Sidebar, Post, Tag
 
 register = template.Library()
+
 
 @register.simple_tag
 def get_category_list():
     # 全站的分类
     return Category.objects.all()
+
 
 @register.simple_tag
 def get_sidebar_list():
@@ -22,6 +24,7 @@ def get_new_post():
     # 最新文章
     return Post.objects.order_by('-pub_date')[:8]
 
+
 @register.simple_tag
 def get_hot_post():
     # 手动热门推荐
@@ -33,7 +36,14 @@ def get_hot_pv_post():
     # 手动热门推荐
     return Post.objects.order_by('-pv')[:8]
 
+
 @register.simple_tag
 def get_archives():
     # 文章归档
     return Post.objects.dates('add_date', 'month', order='DESC')[:8]
+
+
+@register.simple_tag
+def get_tag_list():
+    """全部文章的tag 标签信息"""
+    return Tag.objects.all()

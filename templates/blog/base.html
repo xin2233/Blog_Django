@@ -1,5 +1,6 @@
+{% load category %}
 <!DOCTYPE html>
-{% load static category %}
+{% load static %}
 <html lang="en">
 
 <head>
@@ -33,14 +34,12 @@
 					<a class="navbar-item" href="/">
 						首页
 					</a>
-
 					{% get_category_list as category_list %}
-
-						{% for category in category_list %}
-						<a class="navbar-item" href="{% url 'blog:category_list' category.id %}">
-							{{ category.name }}
-						</a>
-						{% endfor %}
+                    {% for category in category_list %}
+                    <a class="navbar-item" href="{% url 'blog:category_list' category.id %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
 					{% endblock %}
 				</div>
 

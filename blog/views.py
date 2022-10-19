@@ -1,10 +1,10 @@
 from http.client import HTTPResponse
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q, F
 from django.core.paginator import Paginator
 # Create your views here.
-from .models import Category, Post
+from .models import Category, Post, Tag
 
 
 def index(request):
@@ -77,18 +77,44 @@ def archives(request, year, month):
 
 from django.contrib.auth.decorators import login_required
 
-# 后台管理首页
-# @login_required(login_url='/login/')
+'''后台管理首页'''
+@login_required(login_url='/login/')
 def home_backend(request):
     # 查询此人的所有文章
-    # article_list = Post.objects.filter(owner = request.user.owner)
+    # article_list = Post.objects.filter(owner = request.user.username)
     article_list = Post.objects.all()  # 查询到所有的文章,queryset
+
+    '''locals()函数会以字典类型返回当前位置所有的局部变量。'''
     return render(request, 'blog/backend/home.html', locals())
 
-# 后台文章编辑页面
+'''
+wangeditor 富文本编辑器
+'''
 def backend_add_article(request):
-    return render(request, 'blog/backend/add_wangeditor.html', locals())
-
+    if request.method=='GET':
+        article_list = Post.objects.all()
+        return render(request, 'blog/backend/add_kindeditor.html', locals())
+    else:
+        title=request.POST.get('title')
+        text_content = request.POST.get('text_content')
+        desc=text_content[0:100]
+        category_id_list = request.POST.getlist('category_id')
+        category_id = category_id_list[0]
+        tag_id_list = request.POST.getlist('tag_id')
+        '''参数1：要查询的对象， 参数2：查询条件，成功则返回该对象'''
+        tag = get_object_or_404(Tag, id=tag_id_list[0])
+        print("username, ",request.user.username)
+        print("id, ", request.user.id)
+        owner_id = request.user.id
+        # 数据库， 增加文章数据
+        Post.objects.create(title=title,
+                            content=text_content,
+                            desc=desc,
+                            category_id=category_id,
+                            owner_id=owner_id,
+                            tags=tag)
+        # 重定向
+        return redirect('/home_backend/')
 
 from django.conf import settings  # 配置文件
 from django.views.decorators.csrf import csrf_exempt  # 取消csrftoken
@@ -134,7 +160,9 @@ def article_save(request):
     pass
 
 
-# 增加kindeditor 富文本编辑器
+'''
+增加kindeditor 富文本编辑器
+'''
 @csrf_exempt
 def kindeditor(request):
     return render(request, 'blog/backend/add_kindeditor.html', locals())
@@ -171,7 +199,7 @@ def kindeditor_upload_img(request):
 
     # print(request.FILES)
     file = request.FILES.get('imgFile')
-    print(file.name)
+    # print(file.name)
 
     try:
         new_path = os.path.join(settings.MEDIA_ROOT, 'upload/img/', file.name)

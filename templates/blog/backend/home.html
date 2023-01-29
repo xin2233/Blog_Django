@@ -17,6 +17,7 @@
     <tbody>
         {% for article in article_list %}
         <tr>
+{#            文章详情#}
             <td><a href="{% url 'blog:post_detail' article.id %}">{{ article.title }}</a></td>
             <td>{{ article.category }}</td>
             <td>{{ article.owner }}</td>
@@ -24,6 +25,7 @@
             <td>{{ article.add_date }}</td>
             <td>{{ article.pv }}</td>
             <td><a>删除</a></td>
+            <td><a href="{% url 'blog:edit_article' article.id %}">编辑</a></td>
         </tr>
         {% endfor %}
     </tbody>

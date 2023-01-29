@@ -75,7 +75,7 @@
 				<div class="column is-8">
 					{% block section %}
 					{% block archives %}{% endblock  %}
-					
+
 					{% if page_obj %}
 					{% for post in page_obj %}
 					<div class="box">
@@ -113,22 +113,22 @@
 						{% endif %}
 						</ul>
 						</nav>
-						{% endif %} 
+						{% endif %}
 					{% endblock %}
 				</div>
 				<div class="column is-4">
 
 					{% block right %}
 					{% get_sidebar_list as sidebar_list %}
-					
+
 					{% for sidebar in sidebar_list %}
 					<div class="box">
 						<h1 class=" is-size-5 title">{{ sidebar.title }}</h1>
 						<p>{{ sidebar.get_content|safe }}</p>
 					</div>
-						
+
 					{% endfor %}
-						
+
 					{% endblock %}
 
 				</div>

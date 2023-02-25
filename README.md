@@ -16,10 +16,11 @@ django 3.2， python 3.9
 - 增加后端文章管理页面的编辑功能，可以直接编辑文章，参考django admin 系统设置或者博客园的文章修改页面
 - 
 
-## 更新日志
-- 22.9.25, 增加用户中心文章编辑按钮，文章保存未作，富文本编辑器上传图片出现问题需要调试
-- 22.9.26, kindeditor存在问题，目前采用wangeditor已成功实现富文本编辑器上传图片
-- 22.9.28, kindedtor 图片问题已解决
-- 22.10.15, 增加富文本编辑器下方 文章标签类，类别类，显示和选择【checkbox】
-- 22.10.17，完成富文本编辑器数据存储到数据库
-- 22.10.22, 完成富文本编辑器读取数据库已存储文章，并显示其中。
+
+### 参考一下资源，十分感谢
+- b站，【Django-bbs论坛项目-哔哩哔哩】 https://b23.tv/NjULMj4 。提供后台编辑功能思路。
+- 轻编程 的教程，仓库： https://gitee.com/qbiancheng/django-blog ，
+配套视频教程：https://www.bilibili.com/video/BV1iU4y1A7MH/ ，
+配套文档教程：http://www.lotdoc.cn/blog/topic/detail/1/ ，提供blog 框架思路
+- 
+

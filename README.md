@@ -17,7 +17,7 @@ django 3.2， python 3.9
 - 
 
 
-### 参考一下资源，十分感谢
+### 参考如下资源，十分感谢
 - b站，【Django-bbs论坛项目-哔哩哔哩】 https://b23.tv/NjULMj4 。提供后台编辑功能思路。
 - 轻编程 的教程，仓库： https://gitee.com/qbiancheng/django-blog ，
 配套视频教程：https://www.bilibili.com/video/BV1iU4y1A7MH/ ，

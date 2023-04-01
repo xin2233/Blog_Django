@@ -244,3 +244,9 @@ def kindeditor_upload_img(request):
         res_error['message'] = "图片上传失败！"
         print("error:", res_error)
         return JsonResponse(res_error)
+
+def myadmin(request):
+    return render(request, 'admin/index/index.html', locals())
+
+def welcome(request):
+    return render(request, 'admin/index/welcome.html', locals())

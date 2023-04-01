@@ -19,4 +19,8 @@ urlpatterns = [
     path('edit_article/<int:post_id>/', views.edit_kindeditor, name='edit_article'),  # 增加富文本编辑器，编辑已存在文章
     path('kindeditor_upload_img/', views.kindeditor_upload_img, name='kindeditor_upload_img'),  # kindeditor 富文本编辑器 上传图片
 
+    # 新后台
+    path('myadmin/', views.myadmin),
+    path('welcome/', views.welcome),
+
 ]

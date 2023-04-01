@@ -245,8 +245,22 @@ def kindeditor_upload_img(request):
         print("error:", res_error)
         return JsonResponse(res_error)
 
+# ver1 第一版
 def myadmin(request):
     return render(request, 'admin/index/index.html', locals())
 
 def welcome(request):
     return render(request, 'admin/index/welcome.html', locals())
+def menu1(request):
+    return render(request, 'admin/index/menu1.html', locals())
+def menu2(request):
+    return render(request, 'admin/index/menu2.html', locals())
+
+
+
+# ver2 第二版
+def welcome1(request):
+    return render(request, 'admin/welcome-index.html', locals())
+
+def basetest(request):
+    return render(request, 'admin/base.html')

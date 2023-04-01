@@ -20,7 +20,14 @@ urlpatterns = [
     path('kindeditor_upload_img/', views.kindeditor_upload_img, name='kindeditor_upload_img'),  # kindeditor 富文本编辑器 上传图片
 
     # 新后台
+    # ver1
     path('myadmin/', views.myadmin),
     path('welcome/', views.welcome),
+    path('menu1/', views.menu1),
+    path('menu2/', views.menu2),
+
+    # ver2
+    path('welcome1/', views.welcome1),
+    path('base', views.basetest)
 
 ]

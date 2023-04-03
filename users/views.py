@@ -62,7 +62,7 @@ def login_view(request):
             message = "请检查填写的内容！"
         return render(request, 'users/login.html', locals())
     # context = {'form': form}
-    return render(request, 'users/login.html', locals())
+    return render(request, 'admin/index/login.html', locals())
 
 
 def register(request):

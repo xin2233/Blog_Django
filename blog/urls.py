@@ -25,6 +25,8 @@ urlpatterns = [
     path('welcome/', views.welcome),
     path('menu1/', views.menu1),
     path('menu2/', views.menu2),
+    path('article-info/', views.article_info),
+    path('article-add/', views.article_add),
 
     # ver2
     path('welcome1/', views.welcome1),

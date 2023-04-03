@@ -8,7 +8,7 @@ from .models import Category, Post, Tag
 
 
 def index(request):
-    '''# 首页'''
+    """# 首页"""
     post_list = Post.objects.all()  # 查询到所有的文章,queryset
     # 分页方法
     paginator = Paginator(post_list, 2)  # 第二个参数2代表每页显示几个
@@ -30,7 +30,7 @@ def category_list(request, category_id):
 
 
 def post_detail(request, post_id):
-    '''文章详情页'''
+    """文章详情页"""
     post = get_object_or_404(Post, id=post_id)
 
     # 用文章id来实现的上下篇
@@ -80,7 +80,7 @@ from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='/login/')
 def home_backend(request):
-    '''后台管理首页'''
+    """后台管理首页"""
 
     # 查询此人的所有文章
     article_list = Post.objects.all()  # 查询到所有的文章,queryset
@@ -89,7 +89,7 @@ def home_backend(request):
 
 
 def add_kindeditor(request):
-    '''wangeditor 富文本编辑器'''
+    """wangeditor 富文本编辑器"""
     if request.method == 'GET':
         article_list = Post.objects.all()
         return render(request, 'blog/backend/add_kindeditor.html', locals())
@@ -123,7 +123,7 @@ import os
 
 @csrf_exempt
 def uploadimg(request):
-    '''上传图片在富文本编辑器中, 是ckeditor5的富文本编辑器，用于在admin 的文章管理页面'''
+    """上传图片在富文本编辑器中, 是ckeditor5的富文本编辑器，用于在admin 的文章管理页面"""
     res = {
         "errno": 0,  # // 注意：值是数字，不能是字符串
         "data": {
@@ -157,15 +157,15 @@ def uploadimg(request):
 
 
 def edit_kindeditor(request, post_id):
-    '''
+    """
     使用kindeditor，编辑已存在的文章
     ---
     post_id: 文章的id
-    '''
+    """
     if request.method == 'GET':
         # article_list = Post.objects.all()
         post = get_object_or_404(Post, id=post_id)
-        context = {'post':post}
+        context = {'post': post}
         return render(request, 'blog/backend/edit_kindeditor.html', context)
     else:
         title = request.POST.get('title')
@@ -196,9 +196,9 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 @csrf_exempt
 @xframe_options_sameorigin
 def kindeditor_upload_img(request):
-    '''
+    """
     kindeditor 富文本编辑器 图片编辑
-    '''
+    """
 
     '''
     有关X-Frame-Options
@@ -245,22 +245,52 @@ def kindeditor_upload_img(request):
         print("error:", res_error)
         return JsonResponse(res_error)
 
+
 # ver1 第一版
 def myadmin(request):
     return render(request, 'admin/index/index.html', locals())
 
+
 def welcome(request):
     return render(request, 'admin/index/welcome.html', locals())
+
+
 def menu1(request):
     return render(request, 'admin/index/menu1.html', locals())
+
+
 def menu2(request):
     return render(request, 'admin/index/menu2.html', locals())
 
+
+def article_add(request):
+    return render(request, 'admin/index/article-add.html', locals())
+
+
+def article_info(request):
+    return render(request, 'admin/index/admin-info.html', locals())
+
+
+def article_list(request):
+    return render(request, 'admin/index/article-list.html', locals())
+
+
+def column_danye_detail(request):
+    return render(request, 'admin/index/column-danye-detail.html', locals())
+
+
+def danye_detail(request):
+    return render(request, 'admin/index/danye-detail.html', locals())
+
+
+def danye_list(request):
+    return render(request, 'admin/index/danye-list.html', locals())
 
 
 # ver2 第二版
 def welcome1(request):
     return render(request, 'admin/welcome-index.html', locals())
+
 
 def basetest(request):
     return render(request, 'admin/base.html')

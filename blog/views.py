@@ -272,7 +272,16 @@ def article_info(request):
 
 
 def article_list(request):
+    """后台管理首页"""
+
+    # 查询此人的所有文章
+    article_list = Post.objects.all()  # 查询到所有的文章,queryset
+    '''locals()函数会以字典类型返回当前位置所有的局部变量。'''
     return render(request, 'admin/index/article-list.html', locals())
+
+
+def article_detail(request):
+    return render(request, 'admin/index/article-detail.html', locals())
 
 
 def column_danye_detail(request):

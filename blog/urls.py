@@ -27,6 +27,9 @@ urlpatterns = [
     path('menu2/', views.menu2),
     path('article-info/', views.article_info),
     path('article-add/', views.article_add),
+    path('article-list/', views.article_list),
+    path('article-detail/', views.article_detail),
+    path('danye-list/', views.danye_list),
 
     # ver2
     path('welcome1/', views.welcome1),

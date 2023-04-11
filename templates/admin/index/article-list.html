@@ -17,9 +17,9 @@
 					<form class="layui-form" action="">
 						<div class="layui-form-item">
 							<div class="layui-inline tool-btn">
-								<button class="layui-btn layui-btn-small layui-btn-normal addBtn" data-url="article-add.html"><i class="layui-icon">&#xe654;</i></button>
-								<button class="layui-btn layui-btn-small layui-btn-danger delBtn"  data-url="article-add.html"><i class="layui-icon">&#xe640;</i></button>
-								<button class="layui-btn layui-btn-small layui-btn-warm listOrderBtn hidden-xs" data-url="article-add.html"><i class="iconfont">&#xe656;</i></button>
+								<button class="layui-btn layui-btn-small layui-btn-normal addBtn" data-url="/article-add/"><i class="layui-icon">&#xe654;</i></button>
+								<button class="layui-btn layui-btn-small layui-btn-danger delBtn"  data-url="/article-add/"><i class="layui-icon">&#xe640;</i></button>
+								<button class="layui-btn layui-btn-small layui-btn-warm listOrderBtn hidden-xs" data-url="/article-add/"><i class="iconfont">&#xe656;</i></button>
 							</div>
 							<div class="layui-inline">
 								<input type="text" name="title" required lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
@@ -50,16 +50,66 @@
 							<thead>
 								<tr>
 									<th><input type="checkbox" name="" lay-skin="primary" lay-filter="allChoose"></th>
-									<th class="hidden-xs">ID</th>
-									<th class="hidden-xs">排序</th>
-									<th>名称</th>
-									<th class="hidden-xs">创建时间</th>
-									<th class="hidden-xs">修改时间</th>
-									<th>状态</th>
-									<th>操作</th>
+{#									<th class="hidden-xs">ID</th>#}
+{#									<th class="hidden-xs">排序</th>#}
+{#									<th class="hidden-xs">创建时间</th>#}
+{#									<th class="hidden-xs">修改时间</th>#}
+                                    <th>作者</th>
+                                    <th>分类</th>
+                                    <th>标题</th>
+                                    <th>标签</th>
+                                    <th>添加日期</th>
+                                    <th>浏览量</th>
+                                    <th>删除</th>
+                                    <th>编辑</th>
 								</tr>
 							</thead>
 							<tbody>
+
+{#								<tr>#}
+{#									<td><input type="checkbox" name="" lay-skin="primary" data-id="1"></td>#}
+{#									<td class="hidden-xs">1</td>#}
+{#									<td class="hidden-xs"><input type="text" name="title" autocomplete="off" class="layui-input" value="0" data-id="1"></td>#}
+{#									<td>玩具</td>#}
+{#									<td class="hidden-xs">1989-10-14</td>#}
+{#									<td class="hidden-xs">1989-10-14</td>#}
+{#									<td><button class="layui-btn layui-btn-mini layui-btn-normal">正常</button></td>#}
+{#									<td>#}
+{#										<div class="layui-inline">#}
+{#											<button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="/article-detail/"><i class="layui-icon">&#xe642;</i></button>#}
+{#											<button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="1" data-url="/article-detail/"><i class="layui-icon">&#xe640;</i></button>#}
+{#										</div>#}
+{#									</td>#}
+{##}
+{#								</tr>#}
+                                {% for article in article_list %}
+                                    <tr>
+{#                                        文章详情#}
+                                        <td><input type="checkbox" name="" lay-skin="primary" data-id="1"></td>
+                                        <td>{{ article.owner }}</td>
+                                        <td>{{ article.category }}</td>
+                                        <td><a href="{% url 'blog:post_detail' article.id %}">{{ article.title }}</a></td>
+                                        <td>{{ article.tags }}</td>
+                                        <td>{{ article.add_date }}</td>
+                                        <td>{{ article.pv }}</td>
+                                        <td>
+                                            <div class="layui-inline">
+                                                <button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="">
+                                                    <i class="layui-icon">&#xe640;</i>
+                                                </button>
+                                            </div>
+{#                                            <a href="{% url 'blog:edit_article' article.id %}">编辑</a>#}
+                                        </td>
+                                        <td>
+{#                                            <a>删除</a>#}
+                                            <div class="layui-inline">
+                                                <button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="{% url 'blog:edit_article' article.id %}">
+                                                    <i class="layui-icon">&#xe642;</i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
 								<tr>
 									<td><input type="checkbox" name="" lay-skin="primary" data-id="1"></td>
 									<td class="hidden-xs">1</td>
@@ -70,23 +120,8 @@
 									<td><button class="layui-btn layui-btn-mini layui-btn-normal">正常</button></td>
 									<td>
 										<div class="layui-inline">
-											<button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="article-detail.html"><i class="layui-icon">&#xe642;</i></button>
-											<button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="1" data-url="article-detail.html"><i class="layui-icon">&#xe640;</i></button>
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td><input type="checkbox" name="" lay-skin="primary" data-id="1"></td>
-									<td class="hidden-xs">1</td>
-									<td class="hidden-xs"><input type="text" name="title" autocomplete="off" class="layui-input" value="0" data-id="1"></td>
-									<td>玩具</td>
-									<td class="hidden-xs">1989-10-14</td>
-									<td class="hidden-xs">1989-10-14</td>
-									<td><button class="layui-btn layui-btn-mini layui-btn-normal">正常</button></td>
-									<td>
-										<div class="layui-inline">
-											<button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="article-detail.html"><i class="layui-icon">&#xe642;</i></button>
-											<button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="1" data-url="article-detail.html"><i class="layui-icon">&#xe640;</i></button>
+											<button class="layui-btn layui-btn-small layui-btn-normal go-btn" data-id="1" data-url="/article-detail/"><i class="layui-icon">&#xe642;</i></button>
+											<button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="1" data-url="/article-detail/"><i class="layui-icon">&#xe640;</i></button>
 										</div>
 									</td>
 								</tr>

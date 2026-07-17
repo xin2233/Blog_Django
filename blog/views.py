@@ -1,9 +1,11 @@
 from django.core.paginator import Paginator
-from django.db.models import Q, F
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Q, F, Count
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 # Create your views here.
-from .models import Category, Post
+from .models import Category, Post, Comment
 
 
 def index(request):
@@ -41,7 +43,16 @@ def post_detail(request, post_id):
     # date_prev_post = Post.objects.filter(add_date__lt=post.add_date).last()
     # date_next_post = Post.objects.filter(add_date__gt=post.add_date).first()
 
-    context = {'post': post, 'prev_post': prev_post, 'next_post': next_post}
+    comments = post.comments.filter(is_approved=True, parent__isnull=True).select_related('author').prefetch_related('comment_set')
+    comment_count = post.comments.filter(is_approved=True).count()
+
+    context = {
+        'post': post,
+        'prev_post': prev_post,
+        'next_post': next_post,
+        'comments': comments,
+        'comment_count': comment_count,
+    }
     return render(request, 'blog/detail.html', context)
 
 
@@ -73,3 +84,32 @@ def archives(request, year, month):
     page_obj = paginator.get_page(page_number)
     context = {'page_obj': page_obj, 'year': year, 'month': month}
     return render(request, 'blog/archives_list.html', context)
+
+
+@require_POST
+def submit_comment(request, post_id):
+    """提交评论"""
+    post = get_object_or_404(Post, id=post_id, status='published')
+    content = request.POST.get('content', '').strip()
+    parent_id = request.POST.get('parent_id')
+    if not content:
+        messages.error(request, '评论内容不能为空。')
+        return redirect('blog:post_detail', post_id=post_id)
+
+    if len(content) > 1000:
+        messages.error(request, '评论内容不能超过1000字。')
+        return redirect('blog:post_detail', post_id=post_id)
+
+    if request.user.is_authenticated:
+        comment = Comment(post=post, author=request.user, content=content)
+    else:
+        nickname = request.POST.get('nickname', '').strip() or '匿名'
+        comment = Comment(post=post, nickname=nickname, content=content)
+
+    if parent_id:
+        parent = get_object_or_404(Comment, id=parent_id, post=post)
+        comment.parent = parent
+
+    comment.save()
+    messages.success(request, '评论已提交，等待审核后显示。')
+    return redirect('blog:post_detail', post_id=post_id)

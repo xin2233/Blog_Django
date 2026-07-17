@@ -63,6 +63,26 @@ class Post(models.Model):
         return self.title
 
 
+class Comment(models.Model):
+    """ 评论 """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='所属文章')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='登录用户')
+    nickname = models.CharField('昵称', max_length=50, blank=True)
+    email = models.EmailField('邮箱', blank=True)
+    content = models.TextField('内容', max_length=1000)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, verbose_name='回复目标')
+    is_approved = models.BooleanField('已审核', default=False)
+    created_at = models.DateTimeField('评论时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '评论'
+        verbose_name_plural = verbose_name
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return '{} 评论 {}'.format(self.nickname or self.author, self.post.title[:20])
+
+
 class Sidebar(models.Model):
     # 侧边栏的模型数据
 
@@ -120,9 +140,9 @@ class Sidebar(models.Model):
             return render_to_string('blog/sidebar/hot_post.html', context=context)
         elif self.display_type == 4:  
             context = {
-
+                'comments': Comment.objects.filter(is_approved=True).select_related('post', 'author')[:5],
             }
-            return render_to_string('blog/sidebar/commment.html', context=context)
+            return render_to_string('blog/sidebar/comment.html', context=context)
         elif self.display_type == 5:   # 文章归档
             context = {
 

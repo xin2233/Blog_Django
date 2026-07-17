@@ -1,7 +1,8 @@
 from django.core.paginator import Paginator
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 
 # Create your views here.
 from .models import Category, Post, Tag
@@ -78,42 +79,41 @@ def archives(request, year, month):
 from django.contrib.auth.decorators import login_required
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='users:login')
 def home_backend(request):
-    '''后台管理首页'''
+    """后台文章列表。"""
+    query = request.GET.get('q', '').strip()
+    article_list = Post.objects.select_related('category', 'owner', 'tags').order_by('-pub_date')
+    if query:
+        article_list = article_list.filter(Q(title__icontains=query) | Q(desc__icontains=query))
+    paginator = Paginator(article_list, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    stats = Post.objects.aggregate(total_views=Sum('pv'))
+    context = {
+        'page_obj': page_obj,
+        'article_count': article_list.count(),
+        'total_views': stats['total_views'] or 0,
+        'query': query,
+    }
+    return render(request, 'blog/backend/home.html', context)
 
-    # 查询此人的所有文章
-    article_list = Post.objects.all()  # 查询到所有的文章,queryset
-    '''locals()函数会以字典类型返回当前位置所有的局部变量。'''
-    return render(request, 'blog/backend/home.html', locals())
 
-
+@login_required(login_url='users:login')
 def add_kindeditor(request):
-    '''wangeditor 富文本编辑器'''
-    if request.method == 'GET':
-        article_list = Post.objects.all()
-        return render(request, 'blog/backend/add_kindeditor.html', locals())
-    else:
-        title = request.POST.get('title')
-        text_content = request.POST.get('text_content')
-        desc = text_content[0:100]
-        category_id_list = request.POST.getlist('category_id')
-        category_id = category_id_list[0]
-        tag_id_list = request.POST.getlist('tag_id')
-        '''参数1：要查询的对象， 参数2：查询条件，成功则返回该对象'''
-        tag = get_object_or_404(Tag, id=tag_id_list[0])
-        print("username, ", request.user.username)
-        print("id, ", request.user.id)
-        owner_id = request.user.id
-        # 数据库， 增加文章数据
-        Post.objects.create(title=title,
-                            content=text_content,
-                            desc=desc,
-                            category_id=category_id,
-                            owner_id=owner_id,
-                            tags=tag)
-        # 重定向
-        return redirect('/home_backend/')
+    """创建文章。"""
+    context = {"categories": Category.objects.all(), "tags": Tag.objects.all()}
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('text_content', '').strip()
+        category_id = request.POST.get('category_id')
+        tag_id = request.POST.get('tag_id') or None
+        if not title or not content or not category_id:
+            context["error"] = "请填写标题、正文和分类。"
+            return render(request, 'blog/backend/add_kindeditor.html', context)
+        Post.objects.create(title=title, content=content, desc=content[:200], category_id=category_id, owner=request.user, tags_id=tag_id)
+        return redirect('blog:home_backend')
+    return render(request, 'blog/backend/add_kindeditor.html', context)
 
 
 from django.conf import settings  # 配置文件
@@ -156,41 +156,133 @@ def uploadimg(request):
         return JsonResponse(res_err)
 
 
+@login_required(login_url='users:login')
 def edit_kindeditor(request, post_id):
-    '''
-    使用kindeditor，编辑已存在的文章
-    ---
-    post_id: 文章的id
-    '''
-    if request.method == 'GET':
-        # article_list = Post.objects.all()
-        post = get_object_or_404(Post, id=post_id)
-        context = {'post':post}
-        return render(request, 'blog/backend/edit_kindeditor.html', context)
-    else:
-        title = request.POST.get('title')
-        text_content = request.POST.get('text_content')
-        desc = text_content[0:100]
-        category_id_list = request.POST.getlist('category_id')
-        category_id = category_id_list[0]
-        tag_id_list = request.POST.getlist('tag_id')
-        '''参数1：要查询的对象， 参数2：查询条件，成功则返回该对象'''
-        tag = get_object_or_404(Tag, id=tag_id_list[0])
-        print("username, ", request.user.username)
-        print("id, ", request.user.id)
-        owner_id = request.user.id
-        # 数据库， 增加文章数据，不是增加数据，是修改数据，考虑如何修改数据库，数据
-        Post.objects.create(title=title,
-                            content=text_content,
-                            desc=desc,
-                            category_id=category_id,
-                            owner_id=owner_id,
-                            tags=tag)
-        # 重定向
-        return redirect('/home_backend/')
+    """编辑指定文章。"""
+    post = get_object_or_404(Post, id=post_id)
+    context = {"post": post, "categories": Category.objects.all(), "tags": Tag.objects.all()}
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('text_content', '').strip()
+        category_id = request.POST.get('category_id')
+        tag_id = request.POST.get('tag_id') or None
+        if not title or not content or not category_id:
+            context["error"] = "请填写标题、正文和分类。"
+            return render(request, 'blog/backend/edit_kindeditor.html', context)
+        post.title = title
+        post.content = content
+        post.desc = content[:200]
+        post.category_id = category_id
+        post.tags_id = tag_id
+        post.save()
+        return redirect('blog:home_backend')
+    return render(request, 'blog/backend/edit_kindeditor.html', context)
 
 
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+
+
+@login_required(login_url='users:login')
+@require_POST
+def delete_article(request, post_id):
+    """删除文章（仅限自己的文章）。"""
+    post = get_object_or_404(Post, id=post_id, owner=request.user)
+    post.delete()
+    messages.success(request, '文章「{}」已删除。'.format(post.title))
+    return redirect('blog:home_backend')
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_create_category(request):
+    """AJAX 新建分类。"""
+    name = request.POST.get('name', '').strip()
+    if not name:
+        return JsonResponse({'error': '分类名称不能为空'}, status=400)
+    if Category.objects.filter(name=name).exists():
+        return JsonResponse({'error': '分类「{}」已存在。'.format(name)}, status=400)
+    category = Category.objects.create(name=name)
+    return JsonResponse({'id': category.id, 'name': category.name})
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_create_tag(request):
+    """AJAX 新建标签。"""
+    name = request.POST.get('name', '').strip()
+    if not name:
+        return JsonResponse({'error': '标签名称不能为空'}, status=400)
+    if Tag.objects.filter(name=name).exists():
+        return JsonResponse({'error': '标签「{}」已存在。'.format(name)}, status=400)
+    tag = Tag.objects.create(name=name)
+    return JsonResponse({'id': tag.id, 'name': tag.name})
+
+
+@login_required(login_url='users:login')
+def category_tag_manager(request):
+    """分类/标签管理页面。"""
+    categories = Category.objects.all().order_by('id')
+    tags = Tag.objects.all().order_by('id')
+    return render(request, 'blog/backend/category_tag_manager.html', {
+        'categories': categories,
+        'tags': tags,
+    })
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_update_category(request):
+    """AJAX 重命名分类。"""
+    category_id = request.POST.get('id')
+    name = request.POST.get('name', '').strip()
+    if not category_id or not name:
+        return JsonResponse({'error': '参数不完整'}, status=400)
+    if Category.objects.filter(name=name).exclude(id=category_id).exists():
+        return JsonResponse({'error': '分类名称「{}」已存在。'.format(name)}, status=400)
+    category = get_object_or_404(Category, id=category_id)
+    category.name = name
+    category.save()
+    return JsonResponse({'id': category.id, 'name': category.name})
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_delete_category(request):
+    """AJAX 删除分类。"""
+    category_id = request.POST.get('id')
+    category = get_object_or_404(Category, id=category_id)
+    if category.post_set.exists():
+        return JsonResponse({'error': '分类「{}」下还有文章，无法删除。'.format(category.name)}, status=400)
+    category.delete()
+    return JsonResponse({'ok': True})
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_update_tag(request):
+    """AJAX 重命名标签。"""
+    tag_id = request.POST.get('id')
+    name = request.POST.get('name', '').strip()
+    if not tag_id or not name:
+        return JsonResponse({'error': '参数不完整'}, status=400)
+    if Tag.objects.filter(name=name).exclude(id=tag_id).exists():
+        return JsonResponse({'error': '标签名称「{}」已存在。'.format(name)}, status=400)
+    tag = get_object_or_404(Tag, id=tag_id)
+    tag.name = name
+    tag.save()
+    return JsonResponse({'id': tag.id, 'name': tag.name})
+
+
+@login_required(login_url='users:login')
+@require_POST
+def ajax_delete_tag(request):
+    """AJAX 删除标签。"""
+    tag_id = request.POST.get('id')
+    tag = get_object_or_404(Tag, id=tag_id)
+    tag.delete()
+    return JsonResponse({'ok': True})
 
 
 @csrf_exempt

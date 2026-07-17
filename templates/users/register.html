@@ -40,6 +40,7 @@
             <div>
                 <form class="login-form" action="" method="post">
                     {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="alert alert-warning">{{ form.non_field_errors }}</div>{% endif %}
                     <div class="form-group">
                         <input type="text" name="email" class="form-control login-field" value=""
                             placeholder="邮箱" id="login-name">

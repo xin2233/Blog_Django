@@ -77,11 +77,10 @@ def register(request):
             new_user = form.save(commit=False)
             new_user.set_password(form.cleaned_data.get('password1'))
             new_user.username = form.cleaned_data.get('email')
-            new_user.save()
-
-            # 发送邮件
-            send_register_email(form.cleaned_data.get('email'), 'register')
-            return HttpResponse('注册成功')
+            if send_register_email(form.cleaned_data.get('email'), 'register'):
+                new_user.save()
+                return HttpResponse('注册成功，请在邮件中完成验证。')
+            form.add_error(None, '邮件发送失败，请稍后重试。')
 
     context = {'form': form}
     return render(request, 'users/register.html', context)
@@ -97,8 +96,9 @@ def forget_pwd(request):
             email = form.cleaned_data['email']
             exists = User.objects.filter(email=email).exists()
             if exists:
-                send_register_email(email, 'forget')
-                return HttpResponse('邮件已经发送请查收！')
+                if send_register_email(email, 'forget'):
+                    return HttpResponse('邮件已经发送请查收！')
+                form.add_error(None, '邮件发送失败，请稍后重试。')
             else:
                 return HttpResponse('邮箱还未注册，请前往注册！')
 

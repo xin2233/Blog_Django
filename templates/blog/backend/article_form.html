@@ -1,0 +1,270 @@
+{% extends 'blog/backend/backend_base.html' %}
+{% load static %}
+{% block nav_add_article %}active{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'backend/kindeditor/themes/default/default.css' %}">
+<style>
+    /* 限制 KindEditor 容器不溢出父级列 */
+    .ke-container { max-width: 100% !important; }
+</style>
+{% endblock %}
+{% block heading %}{% block form_title %}{% endblock %}{% endblock %}
+{% block backendcontent %}
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<form action="{% block form_action %}{% endblock %}" method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% block form_label %}文章内容{% endblock %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="id_title">标题 <span class="text-danger">*</span></label>
+                        <input class="form-control form-control-lg" id="id_title" name="title"
+                               value="{{ post.title|default:'' }}" maxlength="61" required autofocus
+                               placeholder="请输入文章标题">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="editor_id">正文 <span class="text-danger">*</span></label>
+                        <textarea id="editor_id" name="text_content"
+                                  style="width:100%;height:400px;visibility:hidden;">{{ post.content|default:'' }}</textarea>
+                        <div class="form-text">支持图文混排，可上传图片。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Category & Tags -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">发布设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="id_category">分类 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <select class="form-select" id="id_category" name="category_id" required>
+                                <option value="">请选择分类</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if post.category_id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#newCategoryModal" title="新建分类">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_tag">标签</label>
+                        <div class="input-group">
+                            <select class="form-select" id="id_tag" name="tag_id">
+                                <option value="">不设置标签</option>
+                                {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if post.tags_id == tag.id %}selected{% endif %}>
+                                    {{ tag.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#newTagModal" title="新建标签">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> {% block submit_text %}保存文章{% endblock %}
+                        </button>
+                        <a href="{% url 'blog:home_backend' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- 新建分类 Modal -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建分类</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newCategoryForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="catName">分类名称 <span class="text-danger">*</span></label>
+                        <input class="form-control" id="catName" name="name" maxlength="32" required autofocus placeholder="请输入分类名称">
+                    </div>
+                    <div id="catError" class="text-danger small d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="catSubmitBtn">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 新建标签 Modal -->
+<div class="modal fade" id="newTagModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建标签</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newTagForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="tagName">标签名称 <span class="text-danger">*</span></label>
+                        <input class="form-control" id="tagName" name="name" maxlength="10" required autofocus placeholder="请输入标签名称">
+                    </div>
+                    <div id="tagError" class="text-danger small d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="tagSubmitBtn">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script charset="utf-8" src="{% static 'backend/kindeditor/kindeditor-all.js' %}"></script>
+<script charset="utf-8" src="{% static 'backend/kindeditor/lang/zh-CN.js' %}"></script>
+<script>
+// KindEditor 初始化
+KindEditor.ready(function (K) {
+    window.editor = K.create('#editor_id', {
+        width: '100%',
+        height: '400px',
+        uploadJson: '{% url "blog:kindeditor_upload_img" %}',
+        resizeMode: 1,
+        items: [
+            'source', '|', 'undo', 'redo', '|',
+            'preview', 'print', 'template', 'code', 'cut', 'copy', 'paste',
+            'plainpaste', 'wordpaste', '|',
+            'justifyleft', 'justifycenter', 'justifyright',
+            'justifyfull', 'insertorderedlist', 'insertunorderedlist',
+            'indent', 'outdent', 'subscript', 'superscript', '|',
+            'selectall', '-',
+            'title', 'fontname', 'fontsize', '|',
+            'textcolor', 'bgcolor', 'bold', 'italic', 'underline',
+            'strikethrough', 'removeformat', '|',
+            'image', 'multiimage', '|', 'link', 'unlink', '|',
+            'table', 'hr', 'emoticons', 'pagebreak',
+            'fullscreen', '|', 'about'
+        ]
+    });
+});
+
+// 获取 CSRF token
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// AJAX 新建分类
+document.getElementById('newCategoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('catSubmitBtn');
+    const errDiv = document.getElementById('catError');
+    btn.disabled = true;
+    btn.textContent = '创建中...';
+    errDiv.classList.add('d-none');
+
+    fetch('{% url "blog:ajax_create_category" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: new URLSearchParams({ name: document.getElementById('catName').value })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (!ok) { throw new Error(data.error); }
+        const sel = document.getElementById('id_category');
+        const opt = document.createElement('option');
+        opt.value = data.id;
+        opt.textContent = data.name;
+        opt.selected = true;
+        sel.appendChild(opt);
+        // 关闭弹窗
+        bootstrap.Modal.getInstance(document.getElementById('newCategoryModal')).hide();
+        document.getElementById('catName').value = '';
+    })
+    .catch(err => {
+        errDiv.textContent = err.message;
+        errDiv.classList.remove('d-none');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '创建';
+    });
+});
+
+// AJAX 新建标签
+document.getElementById('newTagForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('tagSubmitBtn');
+    const errDiv = document.getElementById('tagError');
+    btn.disabled = true;
+    btn.textContent = '创建中...';
+    errDiv.classList.add('d-none');
+
+    fetch('{% url "blog:ajax_create_tag" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: new URLSearchParams({ name: document.getElementById('tagName').value })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (!ok) { throw new Error(data.error); }
+        const sel = document.getElementById('id_tag');
+        const opt = document.createElement('option');
+        opt.value = data.id;
+        opt.textContent = data.name;
+        opt.selected = true;
+        sel.appendChild(opt);
+        bootstrap.Modal.getInstance(document.getElementById('newTagModal')).hide();
+        document.getElementById('tagName').value = '';
+    })
+    .catch(err => {
+        errDiv.textContent = err.message;
+        errDiv.classList.remove('d-none');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '创建';
+    });
+});
+</script>
+{% endblock %}

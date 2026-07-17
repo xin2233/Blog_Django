@@ -91,6 +91,16 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'blogdb',
+#         'USER': 'root',
+#         'PASSWORD': 'password',
+#         'HOST': '101.42.221.171',
+#         'PORT': '3307',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -139,16 +149,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-# foreverxr@163.com
-# UFQILJZZQXQEFYSR
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_HOST = 'smtp.163.com'   # 用于发送电子邮件的主机。
-EMAIL_HOST_USER = ""    # 自己的邮箱地址
-EMAIL_HOST_PASSWORD = ""       # 自己的邮箱密码
-EMAIL_PORT = 465                     # 用于中定义的SMTP服务器的端口
-EMAIL_USE_SSL = True             # 是否使用隐式的安全连接
+# Development emails are written to the runserver console. Configure these
+# environment variables in production to enable SMTP delivery.
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_HOST = os.environ['EMAIL_HOST']
+    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '465'))
+    EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'true').lower() == 'true'
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER if not DEBUG else 'noreply@example.com')
 
 # ckeditor5
 CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"

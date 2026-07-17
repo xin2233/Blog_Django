@@ -1,0 +1,307 @@
+{% extends 'blog/backend/backend_base.html' %}
+{% load static %}
+{% block title %}分类/标签管理 | MyBlog{% endblock %}
+{% block nav_categories %}active{% endblock %}
+{% block heading %}分类/标签管理{% endblock %}
+{% block backendcontent %}
+
+<div class="row g-4">
+    <!-- 分类管理 -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">分类管理</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+                    <i class="bi bi-plus-lg"></i> 新建分类
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0" id="categoryTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>名称</th>
+                            <th style="width:120px">文章数</th>
+                            <th style="width:160px" class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr data-id="{{ category.id }}">
+                            <td class="cat-name">{{ category.name }}</td>
+                            <td><span class="badge bg-secondary">{{ category.post_set.count }}</span></td>
+                            <td class="text-end text-nowrap">
+                                <button class="btn btn-sm btn-outline-primary rename-cat-btn" title="重命名">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-cat-btn" title="删除"
+                                    data-name="{{ category.name }}" data-has-posts="{% if category.post_set.exists %}1{% else %}0{% endif %}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">暂无分类</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 标签管理 -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">标签管理</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newTagModal">
+                    <i class="bi bi-plus-lg"></i> 新建标签
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0" id="tagTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>名称</th>
+                            <th style="width:120px">文章数</th>
+                            <th style="width:160px" class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tag in tags %}
+                        <tr data-id="{{ tag.id }}">
+                            <td class="tag-name">{{ tag.name }}</td>
+                            <td><span class="badge bg-secondary">{{ tag.post_set.count }}</span></td>
+                            <td class="text-end text-nowrap">
+                                <button class="btn btn-sm btn-outline-primary rename-tag-btn" title="重命名">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-tag-btn" title="删除">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">暂无标签</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建分类 Modal -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建分类</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newCategoryForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="catName">分类名称 <span class="text-danger">*</span></label>
+                        <input class="form-control" id="catName" name="name" maxlength="32" required autofocus placeholder="请输入分类名称">
+                    </div>
+                    <div id="catError" class="text-danger small d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="catSubmitBtn">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 新建标签 Modal -->
+<div class="modal fade" id="newTagModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建标签</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newTagForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="tagName">标签名称 <span class="text-danger">*</span></label>
+                        <input class="form-control" id="tagName" name="name" maxlength="10" required autofocus placeholder="请输入标签名称">
+                    </div>
+                    <div id="tagError" class="text-danger small d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="tagSubmitBtn">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 重命名 Modal -->
+<div class="modal fade" id="renameModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameModalTitle">重命名</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="renameForm">
+                {% csrf_token %}
+                <input type="hidden" id="renameId" name="id">
+                <input type="hidden" id="renameType" name="type">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="renameName">名称 <span class="text-danger">*</span></label>
+                        <input class="form-control" id="renameName" name="name" maxlength="32" required autofocus>
+                    </div>
+                    <div id="renameError" class="text-danger small d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="renameSubmitBtn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ====== 通用工具 ======
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// ====== 新建分类 ======
+document.getElementById('newCategoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('catSubmitBtn');
+    const errDiv = document.getElementById('catError');
+    btn.disabled = true; btn.textContent = '创建中...';
+    errDiv.classList.add('d-none');
+    fetch('{% url "blog:ajax_create_category" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: new URLSearchParams({ name: document.getElementById('catName').value })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (!ok) throw new Error(data.error);
+        location.reload();
+    })
+    .catch(err => { errDiv.textContent = err.message; errDiv.classList.remove('d-none'); })
+    .finally(() => { btn.disabled = false; btn.textContent = '创建'; });
+});
+
+// ====== 新建标签 ======
+document.getElementById('newTagForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('tagSubmitBtn');
+    const errDiv = document.getElementById('tagError');
+    btn.disabled = true; btn.textContent = '创建中...';
+    errDiv.classList.add('d-none');
+    fetch('{% url "blog:ajax_create_tag" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: new URLSearchParams({ name: document.getElementById('tagName').value })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (!ok) throw new Error(data.error);
+        location.reload();
+    })
+    .catch(err => { errDiv.textContent = err.message; errDiv.classList.remove('d-none'); })
+    .finally(() => { btn.disabled = false; btn.textContent = '创建'; });
+});
+
+// ====== 重命名 ======
+const RENAME_URLS = {
+    category: '{% url "blog:ajax_update_category" %}',
+    tag: '{% url "blog:ajax_update_tag" %}',
+};
+const RENAME_MAXLEN = { category: 32, tag: 10 };
+
+document.querySelectorAll('.rename-cat-btn, .rename-tag-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tr = this.closest('tr');
+        const isCat = this.classList.contains('rename-cat-btn');
+        const type = isCat ? 'category' : 'tag';
+        const id = tr.dataset.id;
+        const name = tr.querySelector(isCat ? '.cat-name' : '.tag-name').textContent;
+        document.getElementById('renameModalTitle').textContent = isCat ? '重命名分类' : '重命名标签';
+        document.getElementById('renameId').value = id;
+        document.getElementById('renameType').value = type;
+        document.getElementById('renameName').value = name;
+        document.getElementById('renameName').maxLength = RENAME_MAXLEN[type];
+        document.getElementById('renameError').classList.add('d-none');
+        new bootstrap.Modal(document.getElementById('renameModal')).show();
+    });
+});
+
+document.getElementById('renameForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('renameSubmitBtn');
+    const errDiv = document.getElementById('renameError');
+    const type = document.getElementById('renameType').value;
+    btn.disabled = true; btn.textContent = '保存中...';
+    errDiv.classList.add('d-none');
+    fetch(RENAME_URLS[type], {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: new URLSearchParams({
+            id: document.getElementById('renameId').value,
+            name: document.getElementById('renameName').value,
+        })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (!ok) throw new Error(data.error);
+        location.reload();
+    })
+    .catch(err => { errDiv.textContent = err.message; errDiv.classList.remove('d-none'); })
+    .finally(() => { btn.disabled = false; btn.textContent = '保存'; });
+});
+
+// ====== 删除 ======
+const DELETE_URLS = {
+    category: '{% url "blog:ajax_delete_category" %}',
+    tag: '{% url "blog:ajax_delete_tag" %}',
+};
+
+document.querySelectorAll('.delete-cat-btn, .delete-tag-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tr = this.closest('tr');
+        const isCat = this.classList.contains('delete-cat-btn');
+        const type = isCat ? 'category' : 'tag';
+        const id = tr.dataset.id;
+        const name = tr.querySelector(isCat ? '.cat-name' : '.tag-name').textContent;
+
+        // 分类下有文章时阻止删除
+        if (isCat && this.dataset.has_posts === '1') {
+            alert('分类「' + name + '」下还有文章，无法删除。');
+            return;
+        }
+
+        if (!confirm('确定要删除「' + name + '」吗？')) return;
+
+        fetch(DELETE_URLS[type], {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            body: new URLSearchParams({ id: id })
+        })
+        .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+        .then(({ ok, data }) => {
+            if (!ok) throw new Error(data.error);
+            location.reload();
+        })
+        .catch(err => { alert(err.message); });
+    });
+});
+</script>
+{% endblock %}

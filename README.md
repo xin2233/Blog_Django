@@ -1,5 +1,5 @@
 # Blog_Django
-django 3.2， python 3.9  
+django 5.2， python 3.12 
 
 ## 已实现功能
 - 博客用户界面
@@ -8,19 +8,42 @@ django 3.2， python 3.9
 - 文章详情显示
 - admin管理界面，编辑文章，集成富文本编辑器
 - 登录界面优化：增加vanta.js动画，修改登录界面->flatui样式
+- 将admin界面的文章编辑功能，由新增的用户中心界面的文章编辑按钮，跳转到自实现的新的文章编辑界面，不在使用admin的默认编辑功能
+
 
 ## 待实现功能
 - 忘记密码
 - 注册界面样式优化 flatui
-- 将admin界面的文章编辑功能，由新增的用户中心界面的文章编辑按钮，跳转到自实现的新的文章编辑界面，不在使用admin的默认编辑功能
 - 增加后端文章管理页面的编辑功能，可以直接编辑文章，参考django admin 系统设置或者博客园的文章修改页面
-- 
+- 数据备份和数据恢复
+
+## 快速启动
+```
+虚拟环境
+virtualenv  venv
+启动虚拟环境
+source ./venv/bin/activate
+安装包
+pip install -r requirements.txt
+配置数据库
+python manage.py migrate
+启动django
+python manage.py runserver 0.0.0.0:8080
+浏览器访问 服务器ip:8080 即可
+```
 
 
-### 参考一下资源，十分感谢
-- b站，【Django-bbs论坛项目-哔哩哔哩】 https://b23.tv/NjULMj4 。提供后台编辑功能思路。
-- 轻编程 的教程，仓库： https://gitee.com/qbiancheng/django-blog ，
-配套视频教程：https://www.bilibili.com/video/BV1iU4y1A7MH/ ，
-配套文档教程：http://www.lotdoc.cn/blog/topic/detail/1/ ，提供blog 框架思路
-- 
+## 可能遇到的问题
+1. django.db.utils.OperationalError: no such table: blog_post  
+```
+输入：
+python manage.py  makemigrations blog
+python manage.py  makemigrations users
+python manage.py migrate 
+重新启动服务
+python manage.py runserver 
+```
+
+### 感谢
+[十分感谢以下资源](./docs/感谢.md)
 

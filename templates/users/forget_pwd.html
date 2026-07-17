@@ -12,6 +12,7 @@
         <hr class=" dropdown-divider">
         <form action="" method="post">
             {% csrf_token %}
+            {{ form.non_field_errors }}
             {{ form.as_p }}
             {{ form.errors }}
             <input type="submit" style="margin-top: 1em;" class="button is-link is-fullwidth" value="发送邮件">

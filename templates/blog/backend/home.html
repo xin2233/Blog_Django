@@ -1,36 +1,177 @@
 {% extends 'blog/backend/backend_base.html' %}
+{% block title %}文章管理 | MyBlog{% endblock %}
+{% block nav_articles %}active{% endblock %}
+{% block heading %}文章管理{% endblock %}
 {% block backendcontent %}
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>标题</th>
-            <th>分类</th>
-            <th>作者</th>
-            <th>标签</th>
-            <th>添加日期</th>
-            <th>浏览量</th>
-            <th>删除</th>                                    
-            <th>编辑</th>                                    
 
-        </tr>
-    </thead>
-    <tbody>
-        {% for article in article_list %}
-        <tr>
-{#            文章详情#}
-            <td><a href="{% url 'blog:post_detail' article.id %}">{{ article.title }}</a></td>
-            <td>{{ article.category }}</td>
-            <td>{{ article.owner }}</td>
-            <td>{{ article.tags }}</td>
-            <td>{{ article.add_date }}</td>
-            <td>{{ article.pv }}</td>
-            <td><a>删除</a></td>
-            <td><a href="{% url 'blog:edit_article' article.id %}">编辑</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock backendcontent %}
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">文章总数</p>
+                        <h3 class="mb-0">{{ article_count }}</h3>
+                    </div>
+                    <div class="text-secondary">
+                        <i class="bi bi-file-text fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">累计浏览</p>
+                        <h3 class="mb-0">{{ total_views }}</h3>
+                    </div>
+                    <div class="text-secondary">
+                        <i class="bi bi-eye fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Search & New Article -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-sm-8">
+                <form method="get" class="row g-2">
+                    <div class="col">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="按标题搜索文章">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            {% if query %}
+                            <a class="btn btn-outline-secondary" href="{% url 'blog:home_backend' %}">清除</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-4 text-sm-end mt-2 mt-sm-0">
+                <a class="btn btn-primary" href="{% url 'blog:add_article' %}">
+                    <i class="bi bi-plus-lg"></i> 新建文章
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>文章</th>
+                        <th class="d-none d-md-table-cell">分类</th>
+                        <th class="d-none d-lg-table-cell">更新时间</th>
+                        <th class="d-none d-md-table-cell text-center">浏览</th>
+                        <th class="text-end">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in page_obj %}
+                    <tr>
+                        <td>
+                            <a class="fw-semibold text-decoration-none" href="{% url 'blog:post_detail' article.id %}" target="_blank" rel="noopener">
+                                {{ article.title }}
+                            </a>
+                            <div class="text-muted small mt-1">{{ article.desc|truncatechars:60 }}</div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <span class="badge bg-secondary">{{ article.category }}</span>
+                        </td>
+                        <td class="d-none d-lg-table-cell text-muted small">{{ article.pub_date|date:"Y-m-d H:i" }}</td>
+                        <td class="d-none d-md-table-cell text-center">{{ article.pv }}</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'blog:edit_article' article.id %}">
+                                <i class="bi bi-pencil"></i> 编辑
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ article.id }}">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                            <!-- Delete Confirmation Modal -->
+                            <div class="modal fade" id="deleteModal-{{ article.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-sm modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">确认删除</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p class="mb-1">确定要删除文章 <strong>「{{ article.title }}」</strong> 吗？</p>
+                                            <p class="text-danger small mb-0">此操作不可撤销。</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <form method="post" action="{% url 'blog:delete_article' article.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">确认删除</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            还没有文章。
+                            <a href="{% url 'blog:add_article' %}">现在写第一篇</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo;</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">上一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                <li class="page-item disabled"><span class="page-link">上一页</span></li>
+                {% endif %}
 
-    
+                {% for i in page_obj.paginator.page_range %}
+                {% if i == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">下一页</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">下一页</span></li>
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

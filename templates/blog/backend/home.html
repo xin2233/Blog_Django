@@ -43,7 +43,14 @@
     <div class="card-header">
         <div class="row align-items-center">
             <div class="col-sm-8">
+                <!-- Status Filter Tabs -->
+                <div class="btn-group btn-group-sm mb-3" role="group">
+                    <a class="btn {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'blog:home_backend' %}{% if query %}?q={{ query }}{% endif %}">全部</a>
+                    <a class="btn {% if status_filter == 'draft' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'blog:home_backend' %}?status=draft{% if query %}&q={{ query }}{% endif %}">草稿</a>
+                    <a class="btn {% if status_filter == 'published' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'blog:home_backend' %}?status=published{% if query %}&q={{ query }}{% endif %}">已发布</a>
+                </div>
                 <form method="get" class="row g-2">
+                    {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
                     <div class="col">
                         <div class="input-group">
                             <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="按标题搜索文章">

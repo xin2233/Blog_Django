@@ -18,7 +18,10 @@ from .models import Category, Post, Tag
 def home_backend(request):
     """后台文章列表。"""
     query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '')
     article_list = Post.objects.select_related('category', 'owner', 'tags').order_by('-pub_date')
+    if status_filter in ('draft', 'published'):
+        article_list = article_list.filter(status=status_filter)
     if query:
         article_list = article_list.filter(Q(title__icontains=query) | Q(desc__icontains=query))
     paginator = Paginator(article_list, 15)
@@ -30,6 +33,7 @@ def home_backend(request):
         'article_count': article_list.count(),
         'total_views': stats['total_views'] or 0,
         'query': query,
+        'status_filter': status_filter,
     }
     return render(request, 'blog/backend/home.html', context)
 

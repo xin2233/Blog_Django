@@ -19,6 +19,7 @@ urlpatterns = [
     path('add_article/', views_backend.add_kindeditor, name='add_article'),
     path('edit_article/<int:post_id>/', views_backend.edit_kindeditor, name='edit_article'),
     path('delete_article/<int:post_id>/', views_backend.delete_article, name='delete_article'),
+    path('toggle_article_status/<int:post_id>/', views_backend.toggle_article_status, name='toggle_article_status'),
     path('kindeditor_upload_img/', views_backend.kindeditor_upload_img, name='kindeditor_upload_img'),
     path('ajax_create_category/', views_backend.ajax_create_category, name='ajax_create_category'),
     path('ajax_create_tag/', views_backend.ajax_create_tag, name='ajax_create_tag'),

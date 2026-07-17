@@ -43,10 +43,17 @@ def add_kindeditor(request):
         content = request.POST.get('text_content', '').strip()
         category_id = request.POST.get('category_id')
         tag_id = request.POST.get('tag_id') or None
+        status = request.POST.get('status', 'draft')
         if not title or not content or not category_id:
             context["error"] = "请填写标题、正文和分类。"
             return render(request, 'blog/backend/add_kindeditor.html', context)
-        Post.objects.create(title=title, content=content, desc=content[:200], category_id=category_id, owner=request.user, tags_id=tag_id)
+        Post.objects.create(
+            title=title, content=content, desc=content[:200],
+            category_id=category_id, owner=request.user, tags_id=tag_id,
+            status=status,
+        )
+        msg = '文章已发布。' if status == 'published' else '文章已保存为草稿。'
+        messages.success(request, msg)
         return redirect('blog:home_backend')
     return render(request, 'blog/backend/add_kindeditor.html', context)
 
@@ -91,6 +98,7 @@ def edit_kindeditor(request, post_id):
         content = request.POST.get('text_content', '').strip()
         category_id = request.POST.get('category_id')
         tag_id = request.POST.get('tag_id') or None
+        status = request.POST.get('status', post.status)
         if not title or not content or not category_id:
             context["error"] = "请填写标题、正文和分类。"
             return render(request, 'blog/backend/edit_kindeditor.html', context)
@@ -99,7 +107,10 @@ def edit_kindeditor(request, post_id):
         post.desc = content[:200]
         post.category_id = category_id
         post.tags_id = tag_id
+        post.status = status
         post.save()
+        msg = '文章已更新并发布。' if status == 'published' else '文章已保存为草稿。'
+        messages.success(request, msg)
         return redirect('blog:home_backend')
     return render(request, 'blog/backend/edit_kindeditor.html', context)
 
@@ -111,6 +122,18 @@ def delete_article(request, post_id):
     post = get_object_or_404(Post, id=post_id, owner=request.user)
     post.delete()
     messages.success(request, '文章「{}」已删除。'.format(post.title))
+    return redirect('blog:home_backend')
+
+
+@login_required(login_url='users:login')
+@require_POST
+def toggle_article_status(request, post_id):
+    """一键切换文章状态 draft ↔ published。"""
+    post = get_object_or_404(Post, id=post_id, owner=request.user)
+    post.status = 'published' if post.status == 'draft' else 'draft'
+    post.save()
+    status_name = '已发布' if post.status == 'published' else '草稿'
+    messages.success(request, '文章「{}」已切换为{}。'.format(post.title, status_name))
     return redirect('blog:home_backend')
 
 

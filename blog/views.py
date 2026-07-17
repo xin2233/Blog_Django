@@ -8,7 +8,7 @@ from .models import Category, Post
 
 def index(request):
     '''# 首页'''
-    post_list = Post.objects.all().order_by('-id')  # 查询到所有的文章,queryset
+    post_list = Post.objects.filter(status='published').order_by('-id')  # 查询到所有的文章,queryset
     # 分页方法
     paginator = Paginator(post_list, 2)  # 第二个参数2代表每页显示几个
     page_number = request.GET.get('page')  # http://assas.co/?page=1 (页码)
@@ -20,7 +20,7 @@ def index(request):
 def category_list(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     # 获取当前分类下的所有文章
-    posts = category.post_set.all().order_by('-id')
+    posts = category.post_set.filter(status='published').order_by('-id')
     paginator = Paginator(posts, 2)  # 第二个参数2代表每页显示几个
     page_number = request.GET.get('page')  # http://assas.co/?page=1 (页码)
     page_obj = paginator.get_page(page_number)
@@ -50,11 +50,12 @@ def search(request):
     keyword = request.GET.get('keyword')
     # 没有搜索默认显示所有文章
     if not keyword:
-        post_list = Post.objects.all().order_by('-id')
+        post_list = Post.objects.filter(status='published').order_by('-id')
     else:
         # 包含查询的方法，用Q对象来组合复杂查询，title__icontains 他两个之间用的是双下划线（__）链接
         post_list = Post.objects.filter(
-            Q(title__icontains=keyword) | Q(desc__icontains=keyword) | Q(content__icontains=keyword)).order_by('-id')
+            Q(title__icontains=keyword) | Q(desc__icontains=keyword) | Q(content__icontains=keyword),
+            status='published').order_by('-id')
     paginator = Paginator(post_list, 2)  # 第二个参数2代表每页显示几个
     page_number = request.GET.get('page')  # http://assas.co/?page=1 (页码)
     page_obj = paginator.get_page(page_number)
@@ -66,7 +67,7 @@ def search(request):
 
 def archives(request, year, month):
     # 文章归档列表页
-    post_list = Post.objects.filter(add_date__year=year, add_date__month=month).order_by('-id')
+    post_list = Post.objects.filter(status='published', add_date__year=year, add_date__month=month).order_by('-id')
     paginator = Paginator(post_list, 2)  # 第二个参数2代表每页显示几个
     page_number = request.GET.get('page')  # http://assas.co/?page=1 (页码)
     page_obj = paginator.get_page(page_number)

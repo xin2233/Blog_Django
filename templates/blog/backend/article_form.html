@@ -94,9 +94,18 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> {% block submit_text %}保存文章{% endblock %}
+                        {% if post and post.status == 'published' %}
+                        <button type="submit" name="status" value="published" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> 保存修改
                         </button>
+                        {% else %}
+                        <button type="submit" name="status" value="draft" class="btn btn-secondary">
+                            <i class="bi bi-save"></i> 存草稿
+                        </button>
+                        <button type="submit" name="status" value="published" class="btn btn-primary">
+                            <i class="bi bi-send"></i> 发布
+                        </button>
+                        {% endif %}
                         <a href="{% url 'blog:home_backend' %}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> 返回列表
                         </a>

@@ -1,21 +1,5 @@
-# Blog_Django
+## 环境
 django 5.2， python 3.12 
-
-## 已实现功能
-- 博客用户界面
-- 登录，注册
-- 文章首页显示
-- 文章详情显示
-- admin管理界面，编辑文章，集成富文本编辑器
-- 登录界面优化：增加vanta.js动画，修改登录界面->flatui样式
-- 将admin界面的文章编辑功能，由新增的用户中心界面的文章编辑按钮，跳转到自实现的新的文章编辑界面，不在使用admin的默认编辑功能
-
-
-## 待实现功能
-- 忘记密码
-- 注册界面样式优化 flatui
-- 增加后端文章管理页面的编辑功能，可以直接编辑文章，参考django admin 系统设置或者博客园的文章修改页面
-- 数据备份和数据恢复
 
 ## 快速启动
 ```
@@ -33,7 +17,7 @@ python manage.py runserver 0.0.0.0:8080
 ```
 
 
-## 可能遇到的问题
+### 可能遇到的问题
 1. django.db.utils.OperationalError: no such table: blog_post  
 ```
 输入：
@@ -43,6 +27,14 @@ python manage.py migrate
 重新启动服务
 python manage.py runserver 
 ```
+
+## 功能
+[功能列表](./docs/开发计划.md)
+
+[修改记录](./docs/changelog.md)
+
+## 备份与恢复
+[备份与恢复说明](./docs/数据备份与恢复操作说明.md)
 
 ### 感谢
 [十分感谢以下资源](./docs/感谢.md)

@@ -2,6 +2,8 @@ media/
 migrations/
 .idea/
 .vscode/
+AGENTS.md
+backups/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

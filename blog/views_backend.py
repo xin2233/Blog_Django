@@ -1,15 +1,22 @@
 """后台管理视图 — 从 views.py 拆分出来"""
+import os
+import tarfile
+import tempfile
+import shutil
+from datetime import datetime
+from io import BytesIO, StringIO
+
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.core.management import call_command
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
-import os
 
 from .models import Category, Post, Tag
 
@@ -259,3 +266,91 @@ def kindeditor_upload_img(request):
         res_error['message'] = "图片上传失败！"
         print("error:", res_error)
         return JsonResponse(res_error)
+
+
+@login_required(login_url='users:login')
+def backup_restore(request):
+    """备份/恢复页面。"""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        # === 备份与下载 ===
+        if action == 'backup':
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # dumpdata 导出全量数据到 JSON
+                buf = StringIO()
+                call_command(
+                    'dumpdata',
+                    '--exclude', 'contenttypes',
+                    '--exclude', 'auth.permission',
+                    '--exclude', 'sessions',
+                    '--format', 'json',
+                    '--indent', '2',
+                    stdout=buf,
+                )
+                json_path = os.path.join(tmpdir, 'data.json')
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    f.write(buf.getvalue())
+
+                # 复制媒体文件
+                media_tmp = os.path.join(tmpdir, 'media')
+                if os.path.exists(settings.MEDIA_ROOT):
+                    shutil.copytree(settings.MEDIA_ROOT, media_tmp, symlinks=True)
+
+                # 打包到内存
+                buf_out = BytesIO()
+                with tarfile.open(fileobj=buf_out, mode='w:gz') as tar:
+                    tar.add(json_path, arcname='data.json')
+                    if os.path.exists(media_tmp):
+                        tar.add(media_tmp, arcname='media')
+                buf_out.seek(0)
+                stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                return FileResponse(buf_out, as_attachment=True,
+                                    filename=f'blog_backup_{stamp}.tar.gz')
+
+        # === 恢复 ===
+        elif action == 'restore':
+            backup_file = request.FILES.get('backup_file')
+            if not backup_file:
+                messages.error(request, '请选择备份文件。')
+                return redirect('blog:backup_restore')
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # 保存上传的备份文件
+                tmp_path = os.path.join(tmpdir, 'backup.tar.gz')
+                with open(tmp_path, 'wb') as f:
+                    for chunk in backup_file.chunks():
+                        f.write(chunk)
+
+                if not tarfile.is_tarfile(tmp_path):
+                    messages.error(request, '文件不是有效的 tar.gz 格式。')
+                    return redirect('blog:backup_restore')
+
+                # 解压
+                with tarfile.open(tmp_path, 'r:gz') as tar:
+                    tar.extractall(path=tmpdir)
+
+                # 检查 data.json
+                data_json = os.path.join(tmpdir, 'data.json')
+                if not os.path.exists(data_json):
+                    messages.error(request, '备份文件中缺少 data.json。')
+                    return redirect('blog:backup_restore')
+
+                # 清空现有数据 + loaddata 导入
+                call_command('flush', '--noinput', verbosity=0)
+                call_command('loaddata', data_json, verbosity=0)
+
+                # 恢复媒体文件
+                media_tmp = os.path.join(tmpdir, 'media')
+                if os.path.exists(media_tmp):
+                    if os.path.exists(settings.MEDIA_ROOT):
+                        shutil.rmtree(settings.MEDIA_ROOT)
+                    shutil.copytree(media_tmp, settings.MEDIA_ROOT, symlinks=True)
+
+            messages.success(request, '恢复成功！请重新登录。')
+            return redirect('users:login')
+
+        messages.error(request, '未知操作。')
+        return redirect('blog:backup_restore')
+
+    return render(request, 'blog/backend/backup_restore.html')

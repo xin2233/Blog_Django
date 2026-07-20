@@ -76,6 +76,12 @@
                     </li>
                     <li class="nav-header">系统</li>
                     <li class="nav-item">
+                        <a href="{% url 'blog:backup_restore' %}" class="nav-link {% block nav_backup %}{% endblock %}">
+                            <i class="nav-icon bi bi-database"></i>
+                            <p>备份与恢复</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{% url 'users:user_profile' %}" class="nav-link">
                             <i class="nav-icon bi bi-person"></i>
                             <p>个人资料</p>

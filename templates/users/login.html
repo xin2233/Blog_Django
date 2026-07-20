@@ -49,7 +49,7 @@
                     <input type="submit" class="btn btn-primary btn-lg btn-block" value="登录">
                     <!-- <input class="btn btn-primary btn-lg btn-block " type="submit" href="#">登录</a> -->
                     <!-- <a class="btn btn-primary btn-lg btn-block" type="reset" href="#">重置</a> -->
-                    <a class="login-link" href="#">忘记密码?</a>
+                    <a class="login-link" href="{% url 'users:forget_pwd' %}">忘记密码?</a>
                 </form>
             </div>
             {% if message %}

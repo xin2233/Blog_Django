@@ -33,4 +33,96 @@
     </div>
 </div>
 
+<!-- 评论区域 -->
+<div class="box">
+    <h2 class="is-size-5 has-text-weight-bold mb-3">
+        评论 <span class="has-text-grey-light is-size-6">({{ comment_count }})</span>
+    </h2>
+
+    <!-- 评论列表 -->
+    {% if comments %}
+        {% for comment in comments %}
+        <div class="media mb-4" id="comment-{{ comment.id }}">
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>{{ comment.author.username|default:comment.nickname }}</strong>
+                        <small class="has-text-grey ml-2">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                        <br>
+                        {{ comment.content }}
+                    </p>
+                </div>
+                <!-- 回复按钮 -->
+                <a class="is-size-7 has-text-grey" href="#" onclick="document.getElementById('reply-{{ comment.id }}').style.display='block'; return false;">
+                    回复
+                </a>
+                <!-- 回复表单 -->
+                <form method="post" action="{% url 'blog:submit_comment' post.id %}" id="reply-{{ comment.id }}" style="display:none;" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                    {% if not user.is_authenticated %}
+                    <div class="field">
+                        <input class="input is-small" type="text" name="nickname" placeholder="昵称（选填）" maxlength="50">
+                    </div>
+                    {% endif %}
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <textarea class="textarea is-small" name="content" maxlength="1000" placeholder="写回复..." required></textarea>
+                        </div>
+                        <div class="control">
+                            <button class="button is-small is-primary" type="submit">回复</button>
+                        </div>
+                    </div>
+                </form>
+                <!-- 子评论 -->
+                {% for reply in comment.comment_set.all %}
+                {% if reply.is_approved %}
+                <div class="media mt-2 ml-5">
+                    <div class="media-content">
+                        <div class="content">
+                            <p>
+                                <strong>{{ reply.author.username|default:reply.nickname }}</strong>
+                                <small class="has-text-grey ml-2">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+                                <br>
+                                {{ reply.content }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <p class="has-text-grey">暂无评论。</p>
+    {% endif %}
+
+    <hr>
+    <!-- 发表评论 -->
+    <h3 class="is-size-6 has-text-weight-bold mb-3">发表评论</h3>
+    <form method="post" action="{% url 'blog:submit_comment' post.id %}">
+        {% csrf_token %}
+        {% if not user.is_authenticated %}
+        <div class="field">
+            <label class="label is-size-7">昵称</label>
+            <div class="control">
+                <input class="input" type="text" name="nickname" placeholder="昵称（选填）" maxlength="50">
+            </div>
+        </div>
+        {% endif %}
+        <div class="field">
+            <label class="label is-size-7">评论内容</label>
+            <div class="control">
+                <textarea class="textarea" name="content" maxlength="1000" placeholder="说点什么..." required></textarea>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button class="button is-primary" type="submit">提交评论</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 {% endblock %}

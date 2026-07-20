@@ -36,12 +36,19 @@ class Tag(models.Model):
 
 class Post(models.Model):
     """ 文章 """
+
+    STATUS_CHOICES = (
+        ('draft', '草稿'),
+        ('published', '已发布'),
+    )
+
     title = models.CharField(max_length=61, verbose_name="文章标题")
     desc = models.TextField(max_length=200, blank=True, default='', verbose_name="文章描述")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="分类")
     content = models.TextField(verbose_name="文章详情")
     tags = models.ForeignKey(Tag, blank=True, null=True, on_delete=models.CASCADE, verbose_name="文章标签")
     owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="作者")
+    status = models.CharField('状态', max_length=10, choices=STATUS_CHOICES, default='draft')
     is_hot = models.BooleanField(default=False, verbose_name="是否热门")   # 手动热门推荐
 
     pv = models.IntegerField(default=0,verbose_name="浏览量")  # 浏览量
@@ -54,6 +61,26 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    """ 评论 """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='所属文章')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='登录用户')
+    nickname = models.CharField('昵称', max_length=50, blank=True)
+    email = models.EmailField('邮箱', blank=True)
+    content = models.TextField('内容', max_length=1000)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, verbose_name='回复目标')
+    is_approved = models.BooleanField('已审核', default=False)
+    created_at = models.DateTimeField('评论时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '评论'
+        verbose_name_plural = verbose_name
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return '{} 评论 {}'.format(self.nickname or self.author, self.post.title[:20])
 
 
 class Sidebar(models.Model):
@@ -113,9 +140,9 @@ class Sidebar(models.Model):
             return render_to_string('blog/sidebar/hot_post.html', context=context)
         elif self.display_type == 4:  
             context = {
-
+                'comments': Comment.objects.filter(is_approved=True).select_related('post', 'author')[:5],
             }
-            return render_to_string('blog/sidebar/commment.html', context=context)
+            return render_to_string('blog/sidebar/comment.html', context=context)
         elif self.display_type == 5:   # 文章归档
             context = {
 

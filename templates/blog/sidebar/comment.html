@@ -1,1 +1,13 @@
-最新留言数据
+{% if comments %}
+{% for comment in comments %}
+<div class="mb-2 pb-2" style="border-bottom:1px solid #eee;">
+    <p class="is-size-7 has-text-grey mb-1">
+        <strong>{{ comment.author.username|default:comment.nickname }}</strong>
+        评论了 <a href="{% url 'blog:post_detail' comment.post.id %}">{{ comment.post.title|truncatechars:20 }}</a>
+    </p>
+    <p class="is-size-7">{{ comment.content|truncatechars:40 }}</p>
+</div>
+{% endfor %}
+{% else %}
+<p class="is-size-7 has-text-grey">暂无评论</p>
+{% endif %}

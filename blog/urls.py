@@ -29,4 +29,5 @@ urlpatterns = [
     path('ajax_delete_category/', views_backend.ajax_delete_category, name='ajax_delete_category'),
     path('ajax_update_tag/', views_backend.ajax_update_tag, name='ajax_update_tag'),
     path('ajax_delete_tag/', views_backend.ajax_delete_tag, name='ajax_delete_tag'),
+    path('backup_restore/', views_backend.backup_restore, name='backup_restore'),
 ]

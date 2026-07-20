@@ -17,7 +17,7 @@ python manage.py runserver 0.0.0.0:8080
 ```
 
 
-## 可能遇到的问题
+### 可能遇到的问题
 1. django.db.utils.OperationalError: no such table: blog_post  
 ```
 输入：
@@ -32,6 +32,9 @@ python manage.py runserver
 [功能列表](./docs/开发计划.md)
 
 [修改记录](./docs/changelog.md)
+
+## 备份与恢复
+[备份与恢复说明](./docs/数据备份与恢复操作说明.md)
 
 ### 感谢
 [十分感谢以下资源](./docs/感谢.md)

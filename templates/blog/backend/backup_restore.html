@@ -1,0 +1,57 @@
+{% extends 'blog/backend/backend_base.html' %}
+{% block title %}备份与恢复 | MyBlog{% endblock %}
+{% block nav_backup %}active{% endblock %}
+{% block heading %}数据备份与恢复{% endblock %}
+{% block backendcontent %}
+
+<div class="row g-3">
+    <!-- 备份卡片 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-download me-1"></i> 下载备份
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">将当前数据库和媒体文件打包为 <code>.tar.gz</code> 文件下载。</p>
+                <form method="post" action="{% url 'blog:backup_restore' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="backup">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download"></i> 立即备份并下载
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 恢复卡片 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-upload me-1"></i> 恢复数据
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>警告：</strong>恢复操作将<strong>覆盖</strong>当前所有数据（文章、评论、用户、媒体文件等），此操作不可撤销！
+                </div>
+                <form method="post" action="{% url 'blog:backup_restore' %}" enctype="multipart/form-data" id="restoreForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="restore">
+                    <div class="mb-3">
+                        <label class="form-label" for="backupFile">选择备份文件 (.tar.gz)</label>
+                        <input class="form-control" type="file" id="backupFile" name="backup_file" accept=".tar.gz" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger" id="restoreBtn" onclick="return confirm('确定要恢复数据吗？当前所有数据将被覆盖！')">
+                        <i class="bi bi-upload"></i> 上传并恢复
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

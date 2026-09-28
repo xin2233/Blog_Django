@@ -32,11 +32,11 @@ def category_list(request, category_id):
 
 def post_detail(request, post_id):
     '''文章详情页'''
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, id=post_id, status='published')
 
-    # 用文章id来实现的上下篇
-    prev_post = Post.objects.filter(id__lt=post_id).last()  # 上一篇
-    next_post = Post.objects.filter(id__gt=post_id).first()  # 下一篇
+    # 用文章id来实现的上下篇（仅展示已发布文章，避免草稿泄露）
+    prev_post = Post.objects.filter(id__lt=post_id, status='published').last()  # 上一篇
+    next_post = Post.objects.filter(id__gt=post_id, status='published').first()  # 下一篇
     Post.objects.filter(id=post_id).update(pv=F('pv') + 1)  # 这个功能有漏洞，仅做思路讲解
 
     # 用发布日期来实现上下篇

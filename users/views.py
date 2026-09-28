@@ -14,15 +14,11 @@ from django.contrib.auth.decorators import login_required
 class MyBackend(ModelBackend):
     """ 邮箱登录注册 """
     def authenticate(self, request, username=None, password=None, ):
-        try:
-            user = User.objects.get(Q(username=username) | Q(email=username))
-            print("user:", user)
-            print('user check,', user.check_password)
-            if user.check_password(password):  # 加密明文密码
+        # 用户名唯一，但邮箱不是唯一字段，可能有多个匹配，逐个校验密码
+        for user in User.objects.filter(Q(username=username) | Q(email=username)):
+            if user.check_password(password):
                 return user
-        except Exception as e:
-            print(e)
-            return None
+        return None
 
 def active_user(request, active_code):
     """ 修改用户状态，比对链接验证码 """
@@ -30,9 +26,11 @@ def active_user(request, active_code):
     if all_records:
         for recod in all_records:
             email = recod.email
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
+            if user is None:
+                continue
             user.is_staff = True
-            user.save
+            user.save()
     else:
         return HttpResponse('链接有误')
     return redirect('users:login')
@@ -40,8 +38,8 @@ def active_user(request, active_code):
 
 def login_view(request):
     """登录功能"""
-    if request.session.get('is_login', None):  # 如果已经登陆了就直接进入index
-        return redirect('')
+    if request.user.is_authenticated:  # 如果已经登陆了就直接进入首页
+        return redirect('blog:index')
     if request.method != 'POST':
         login_form = LoginForm()
     else:
@@ -49,13 +47,12 @@ def login_view(request):
         if login_form.is_valid():
             username = login_form.cleaned_data['uname']
             password = login_form.cleaned_data['pword']
-            print('in login view,uname{},password{}'.format(username, password))
             my = MyBackend()
             user = my.authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
                 # 登录成功之后跳转到个人中心
-                return redirect('/users/user_profile/')
+                return redirect('users:user_profile')
             else:
                 message = "密码不正确！"
         else:
@@ -112,10 +109,13 @@ def forget_pwd_url(request, active_code):
     else:
         form = ModifyPwdForm(request.POST)
         if form.is_valid():
-            record = EmailVerifyRecord.objects.get(code=active_code)
-            email = record.email
-            user = User.objects.get(email=email)
-            user.username = email
+            record = EmailVerifyRecord.objects.filter(code=active_code).first()
+            if record is None:
+                return HttpResponse('链接有误或者已经失效，请重新获取。')
+            user = User.objects.filter(email=record.email).first()
+            if user is None:
+                return HttpResponse('链接有误或者已经失效，请重新获取。')
+            user.username = record.email
             user.password = make_password(form.cleaned_data.get('password'))
             user.save()
             return HttpResponse('修改成功')
@@ -128,8 +128,7 @@ def forget_pwd_url(request, active_code):
 @login_required(login_url='users:login')
 def user_profile(request):
     ''' 用户中心 '''
-    user = User.objects.get(username=request.user)
-    return render(request, 'users/user_profile.html', {'user': user})
+    return render(request, 'users/user_profile.html', {'user': request.user})
 
 
 def logout_view(request):

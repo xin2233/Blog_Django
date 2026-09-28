@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime
 from io import BytesIO, StringIO
 
+from django.db import transaction
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import JsonResponse, HttpResponse, FileResponse
@@ -55,6 +56,8 @@ def add_kindeditor(request):
         category_id = request.POST.get('category_id')
         tag_id = request.POST.get('tag_id') or None
         status = request.POST.get('status', 'draft')
+        if status not in ('draft', 'published'):
+            status = 'draft'
         if not title or not content or not category_id:
             context["error"] = "请填写标题、正文和分类。"
             return render(request, 'blog/backend/add_kindeditor.html', context)
@@ -110,6 +113,8 @@ def edit_kindeditor(request, post_id):
         category_id = request.POST.get('category_id')
         tag_id = request.POST.get('tag_id') or None
         status = request.POST.get('status', post.status)
+        if status not in ('draft', 'published'):
+            status = 'draft'
         if not title or not content or not category_id:
             context["error"] = "请填写标题、正文和分类。"
             return render(request, 'blog/backend/edit_kindeditor.html', context)
@@ -328,7 +333,7 @@ def backup_restore(request):
 
                 # 解压
                 with tarfile.open(tmp_path, 'r:gz') as tar:
-                    tar.extractall(path=tmpdir)
+                    tar.extractall(path=tmpdir, filter='data')
 
                 # 检查 data.json
                 data_json = os.path.join(tmpdir, 'data.json')
@@ -336,9 +341,14 @@ def backup_restore(request):
                     messages.error(request, '备份文件中缺少 data.json。')
                     return redirect('blog:backup_restore')
 
-                # 清空现有数据 + loaddata 导入
-                call_command('flush', '--noinput', verbosity=0)
-                call_command('loaddata', data_json, verbosity=0)
+                # 清空现有数据 + loaddata 导入（事务包裹：导入失败则回滚，避免清空后无法恢复）
+                try:
+                    with transaction.atomic():
+                        call_command('flush', '--noinput', verbosity=0)
+                        call_command('loaddata', data_json, verbosity=0)
+                except Exception:
+                    messages.error(request, '恢复失败：备份数据导入出错，数据库已回滚，未做任何更改。')
+                    return redirect('blog:backup_restore')
 
                 # 恢复媒体文件
                 media_tmp = os.path.join(tmpdir, 'media')

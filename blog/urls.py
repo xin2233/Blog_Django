@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 
 from . import views
 from . import views_backend
@@ -16,7 +16,6 @@ urlpatterns = [
     # 后台
     path('home_backend/', views_backend.home_backend, name='home_backend'),
     path('upload_img/', views_backend.uploadimg, name='upload_img'),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
     path('add_article/', views_backend.add_kindeditor, name='add_article'),
     path('edit_article/<int:post_id>/', views_backend.edit_kindeditor, name='edit_article'),
     path('delete_article/<int:post_id>/', views_backend.delete_article, name='delete_article'),

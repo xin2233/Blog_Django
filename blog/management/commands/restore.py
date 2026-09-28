@@ -10,6 +10,7 @@ import shutil
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 
 class Command(BaseCommand):
@@ -43,7 +44,7 @@ class Command(BaseCommand):
             # 解压备份到临时目录
             self.stdout.write('正在解压备份文件...')
             with tarfile.open(backup_file, 'r:gz') as tar:
-                tar.extractall(path=tmpdir)
+                tar.extractall(path=tmpdir, filter='data')
 
             # 恢复数据（使用 loaddata）
             data_json = os.path.join(tmpdir, 'data.json')
@@ -51,11 +52,16 @@ class Command(BaseCommand):
                 raise CommandError('备份文件中缺少 data.json，请确认备份文件完整。')
 
             self.stdout.write('正在导入数据（可能会覆盖现有数据）...')
-            # 先清空现有数据（通过 flush 重置自增 ID）
-            self.stdout.write('  清空现有数据...')
-            call_command('flush', '--noinput', verbosity=0)
-            self.stdout.write('  加载备份数据...')
-            call_command('loaddata', data_json, verbosity=1)
+            # flush + loaddata 放在同一事务中，导入失败则整体回滚
+            try:
+                with transaction.atomic():
+                    # 先清空现有数据（通过 flush 重置自增 ID）
+                    self.stdout.write('  清空现有数据...')
+                    call_command('flush', '--noinput', verbosity=0)
+                    self.stdout.write('  加载备份数据...')
+                    call_command('loaddata', data_json, verbosity=1)
+            except Exception as e:
+                raise CommandError(f'数据导入失败，数据库已回滚，未做任何更改: {e}')
             self.stdout.write(self.style.SUCCESS('  数据导入完成。'))
 
             # 恢复媒体文件

@@ -29,7 +29,7 @@ python manage.py runserver
 ```
 
 ## 功能
-[功能列表](./docs/开发计划.md)
+[功能列表](./docs/待办功能清单.md)
 
 [修改记录](./docs/changelog.md)
 

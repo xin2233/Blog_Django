@@ -90,6 +90,7 @@ def uploadimg(request):
     file = request.FILES.get('custom-field-name')
     try:
         new_path = os.path.join(settings.MEDIA_ROOT, 'upload/img/', file.name)
+        os.makedirs(os.path.dirname(new_path), exist_ok=True)
         with open(new_path, 'wb') as f:
             for chunk in file.chunks():
                 f.write(chunk)
@@ -261,6 +262,7 @@ def kindeditor_upload_img(request):
     file = request.FILES.get('imgFile')
     try:
         new_path = os.path.join(settings.MEDIA_ROOT, 'upload/img/', file.name)
+        os.makedirs(os.path.dirname(new_path), exist_ok=True)
         with open(new_path, 'wb') as f:
             for chunk in file.chunks():
                 f.write(chunk)
